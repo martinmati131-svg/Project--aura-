@@ -1,15 +1,24 @@
 # app_watcher.py
-# Project Aura: v0.4
-# Adds a menu bar icon for user feedback and logs labeled data to a CSV file.
+# Project Aura: v1.0 (Live Predictions)
+# This agent collects data, logs user feedback, and makes live predictions.
 
 import time
 import threading
 import csv
+import os
+import pandas as pd
+import joblib
 from AppKit import NSWorkspace
 from pynput import keyboard, mouse
 from pystray import MenuItem as item
 import pystray
 from PIL import Image, ImageDraw
+
+# --- Configuration ---
+LOG_FILE = 'aura_log.csv'
+MODEL_FILE = 'aura_model.joblib'
+COLUMNS_FILE = 'model_columns.joblib'
+PREDICTION_INTERVAL = 30  # seconds
 
 # --- Global State & Thread-Safety ---
 class ActivityMonitor:
@@ -36,63 +45,94 @@ class ActivityMonitor:
             return keys, clicks
 
 def get_active_app_name():
-    """Gets the name of the frontmost application."""
     try:
         active_app = NSWorkspace.sharedWorkspace().frontmostApplication()
-        app_name = active_app.localizedName()
-        return app_name
+        return active_app.localizedName()
     except Exception:
         return "Unknown"
 
 # --- Data Logging ---
-LOG_FILE = 'aura_log.csv'
-
 def write_log(label, app, keys, clicks):
-    """Appends a new row to our CSV log file."""
     timestamp = int(time.time())
     with open(LOG_FILE, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([timestamp, label, app, keys, clicks])
 
+# --- Prediction Logic ---
+def predict_current_state(model, columns):
+    app = get_active_app_name()
+    keys, clicks = monitor.get_and_reset_counts()
+    
+    # Create a DataFrame for the current state with the same structure as the training data
+    live_data = pd.DataFrame([[app, keys, clicks]], columns=['app_name', 'key_presses', 'mouse_clicks'])
+    live_features = pd.get_dummies(live_data, columns=['app_name'])
+    
+    # Align columns to match the model's training data exactly
+    live_features_aligned = live_features.reindex(columns=columns, fill_value=0)
+    
+    # Make prediction
+    prediction = model.predict(live_features_aligned)
+    probability = model.predict_proba(live_features_aligned)
+    
+    confidence = max(probability[0]) * 100
+    print(f"[{time.strftime('%H:%M:%S')}] LIVE PREDICTION: {prediction[0].upper()} (Confidence: {confidence:.1f}%) | App: {app} | Activity: {keys} keys, {clicks} clicks")
+
 # --- Menu Bar Icon Logic ---
 def on_focused_clicked(icon, item):
-    """Callback for the 'Focused' menu item."""
     keys, clicks = monitor.get_and_reset_counts()
     app = get_active_app_name()
     write_log('focused', app, keys, clicks)
-    print(f"LOGGED: focused | App: {app} | Activity: {keys} keys, {clicks} clicks")
+    print(f"MANUAL LOG: focused | App: {app}")
 
 def on_distracted_clicked(icon, item):
-    """Callback for the 'Distracted' menu item."""
     keys, clicks = monitor.get_and_reset_counts()
     app = get_active_app_name()
     write_log('distracted', app, keys, clicks)
-    print(f"LOGGED: distracted | App: {app} | Activity: {keys} keys, {clicks} clicks")
+    print(f"MANUAL LOG: distracted | App: {app}")
 
 def create_image():
-    """Create a simple 16x16 icon for the menu bar."""
     image = Image.new('RGB', (16, 16), color = 'black')
     dc = ImageDraw.Draw(image)
     dc.rectangle([(4, 4), (12, 12)], fill='white')
     return image
 
 if __name__ == "__main__":
-    print("Starting Aura Agent v0.4 (Data Logger)...")
+    print("Starting Aura Agent v1.0 (Live Predictions)...")
 
-    # Initialize CSV file with headers if it doesn't exist
-    try:
-        with open(LOG_FILE, 'x', newline='') as f:
+    # Initialize CSV file if it doesn't exist
+    if not os.path.exists(LOG_FILE):
+        with open(LOG_FILE, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['timestamp', 'label', 'app_name', 'key_presses', 'mouse_clicks'])
-    except FileExistsError:
-        pass # File already exists
 
-    # --- Setup Activity Monitoring in a background thread ---
+    # --- Load the trained model ---
+    try:
+        model = joblib.load(MODEL_FILE)
+        model_columns = joblib.load(COLUMNS_FILE)
+        print("✅ Model loaded successfully.")
+    except FileNotFoundError:
+        print("⚠️ Model not found. Running in data collection mode only.")
+        print("   Run train_model.py to build the model.")
+        model = None
+        model_columns = None
+
+    # --- Start background activity monitoring ---
     monitor = ActivityMonitor()
     keyboard_listener = keyboard.Listener(on_press=monitor.on_press)
     mouse_listener = mouse.Listener(on_click=monitor.on_click)
     keyboard_listener.start()
     mouse_listener.start()
+
+    # --- Start the prediction loop in a separate thread if model is loaded ---
+    if model:
+        def prediction_loop():
+            predict_current_state(model, model_columns)
+            # Schedule the next prediction
+            threading.Timer(PREDICTION_INTERVAL, prediction_loop).start()
+        
+        # Start the first prediction after a short delay
+        threading.Timer(PREDICTION_INTERVAL, prediction_loop).start()
+        print(f"Live predictions will start in {PREDICTION_INTERVAL} seconds.")
 
     # --- Setup and run the Menu Bar Icon ---
     icon = pystray.Icon(
@@ -105,88 +145,8 @@ if __name__ == "__main__":
         )
     )
     
-    print("Agent is running in the menu bar. Right-click the icon to log your status.")
     icon.run()
 
 
-# app_watcher.py
-# Project Aura: v0.3
-# Now tracks input rhythm (keyboard/mouse activity) in addition to context switches.
-
-import time
-from AppKit import NSWorkspace
-from pynput import keyboard, mouse
-import threading
-
-# --- Global State & Thread-Safety ---
-# A simple thread-safe object to hold our activity counts.
-class ActivityMonitor:
-    def __init__(self):
-        self.key_presses = 0
-        self.mouse_clicks = 0
-        self.lock = threading.Lock()
-
-    def on_press(self, key):
-        with self.lock:
-            self.key_presses += 1
-
-    def on_click(self, x, y, button, pressed):
-        if pressed:
-            with self.lock:
-                self.mouse_clicks += 1
-    
-    def get_and_reset_counts(self):
-        with self.lock:
-            keys = self.key_presses
-            clicks = self.mouse_clicks
-            self.key_presses = 0
-            self.mouse_clicks = 0
-            return keys, clicks
-
-def get_active_app_name():
-    """Gets the name of the frontmost application."""
-    try:
-        active_app = NSWorkspace.sharedWorkspace().frontmostApplication()
-        app_name = active_app.localizedName()
-        return app_name
-    except Exception:
-        return "Unknown"
-
-if __name__ == "__main__":
-    print("Starting Aura Agent v0.3 (Context & Rhythm)... Press CTRL+C to stop.")
-    
-    # --- Setup Activity Monitoring ---
-    monitor = ActivityMonitor()
-    keyboard_listener = keyboard.Listener(on_press=monitor.on_press)
-    mouse_listener = mouse.Listener(on_click=monitor.on_click)
-    
-    keyboard_listener.start()
-    mouse_listener.start()
-    
-    # --- Main Loop ---
-    previous_app = get_active_app_name()
-    print(f"Initial application: {previous_app}")
-    
-    try:
-        while True:
-            time.sleep(10) # Check every 10 seconds
-            
-            # 1. Get activity counts for the last interval
-            keys, clicks = monitor.get_and_reset_counts()
-            
-            # 2. Check for context switch
-            current_app = get_active_app_name()
-            if current_app != previous_app:
-                timestamp = time.strftime('%H:%M:%S')
-                print(f"[{timestamp}] CONTEXT SWITCH: To '{current_app}'")
-                print(f"    └─ Activity in '{previous_app}': {keys} keys, {clicks} clicks.")
-                previous_app = current_app
-            else:
-                timestamp = time.strftime('%H:%M:%S')
-                print(f"[{timestamp}] HEARTBEAT: Still in '{current_app}'. Activity: {keys} keys, {clicks} clicks.")
-
-    except KeyboardInterrupt:
-        print("\nStopping agent...")
-        keyboard_listener.stop()
-        mouse_listener.stop()
-        print("Goodbye!")
+ 
+   
