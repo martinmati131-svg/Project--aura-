@@ -1,0 +1,84 @@
+# train_timeseries_model.py
+# Project Aura: v1.2 (LSTM Training)
+# This script trains a time-series model to predict future focus states.
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+import os
+
+LOG_FILE = 'aura_log.csv'
+MODEL_FILE = 'aura_lstm_model.h5'
+
+# --- 1. Load and Prepare Data ---
+def load_and_prepare_data():
+    if not os.path.exists(LOG_FILE):
+        print(f"Log file '{LOG_FILE}' not found.")
+        return None, None
+
+    df = pd.read_csv(LOG_FILE)
+    if len(df) < 50:
+        print(f"Not enough data. Found {len(df)} entries, need at least 50 for time-series.")
+        return None, None
+
+    # Feature Engineering
+    df['hour_of_day'] = pd.to_datetime(df['timestamp'], unit='s').dt.hour
+    df['day_of_week'] = pd.to_datetime(df['timestamp'], unit='s').dt.dayofweek
+    
+    # Define categorical and numerical features
+    categorical_features = ['app_name']
+    numerical_features = ['key_presses', 'mouse_clicks', 'hour_of_day', 'day_of_week']
+    
+    # Create a preprocessor
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', MinMaxScaler(), numerical_features),
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)])
+
+    # Separate features and labels
+    labels = df['label'].apply(lambda x: 1 if x == 'focused' else 0).values
+    features = df.drop('label', axis=1)
+    
+    # Fit and transform the data
+    processed_features = preprocessor.fit_transform(features).toarray()
+    
+    return processed_features, labels
+
+# --- 2. Create Time-Series Sequences ---
+def create_sequences(features, labels, time_steps=10):
+    X, y = [], []
+    for i in range(len(features) - time_steps):
+        X.append(features[i:(i + time_steps)])
+        y.append(labels[i + time_steps])
+    return np.array(X), np.array(y)
+
+# --- 3. Build and Train LSTM Model ---
+def build_and_train_model(X_train, y_train):
+    model = Sequential([
+        LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
+        Dropout(0.2),
+        LSTM(50, return_sequences=False),
+        Dropout(0.2),
+        Dense(25, activation='relu'),
+        Dense(1, activation='sigmoid') # Sigmoid for binary classification (focused/distracted)
+    ])
+    
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.summary()
+    
+    print("\n--- Training LSTM Model ---")
+    model.fit(X_train, y_train, epochs=20, batch_size=32, validation_split=0.1)
+    
+    # Save the trained model
+    model.save(MODEL_FILE)
+    print(f"✅ Model trained and saved as '{MODEL_FILE}'")
+    return model
+
+if __name__ == '__main__':
+    features, labels = load_and_prepare_data()
+    if features is not None:
+        X_seq, y_seq = create_sequences(features, labels)
+        build_and_train_model(X_seq, y_seq)
