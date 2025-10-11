@@ -1,0 +1,96 @@
+# team_aggregator.py
+# Project Aura: Prototype for the Team Aggregation Service
+
+import pandas as pd
+import os
+import random
+from datetime import datetime, timedelta
+
+# --- Part 1: Data Simulation ---
+# This part creates fake log files for our "employees".
+
+def simulate_employee_data(employee_id, days=7):
+    """Creates a fake aura_log.csv file for a single employee."""
+    filename = f"employee_{employee_id}_log.csv"
+    apps_focused = ["VS Code", "Figma", "Google Docs", "Blender"]
+    apps_distracted = ["Slack", "Twitter", "YouTube", "Discord"]
+    
+    with open(filename, 'w', newline='') as f:
+        writer = pd.DataFrame(columns=['timestamp', 'label', 'app_name', 'key_presses', 'mouse_clicks'])
+        writer.to_csv(f, index=False)
+
+        records = []
+        for day in range(days):
+            for _ in range(random.randint(10, 30)): # Random number of logs per day
+                timestamp = int((datetime.now() - timedelta(days=day, hours=random.randint(0, 8))).timestamp())
+                is_focused = random.random() > 0.4 # 60% chance of being focused
+                
+                label = "focused" if is_focused else "distracted"
+                app = random.choice(apps_focused) if is_focused else random.choice(apps_distracted)
+                keys = random.randint(50, 500)
+                clicks = random.randint(20, 200)
+                records.append([timestamp, label, app, keys, clicks])
+        
+        pd.DataFrame(records, columns=['timestamp', 'label', 'app_name', 'key_presses', 'mouse_clicks']).to_csv(f, header=False, index=False)
+    print(f"Generated fake data for employee {employee_id}.")
+
+# --- Part 2: The Aggregation Service ---
+# This is the core logic for the manager's dashboard.
+
+class TeamAggregator:
+    def __init__(self, employee_files):
+        self.all_data = self.load_and_anonymize(employee_files)
+        print(f"\nSuccessfully loaded and anonymized data from {len(employee_files)} team members.")
+
+    def load_and_anonymize(self, files):
+        """Loads all employee CSVs into a single, anonymized DataFrame."""
+        df_list = []
+        for i, file in enumerate(files):
+            temp_df = pd.read_csv(file)
+            # The 'employee_id' is only for aggregation, not exposed in the final report.
+            temp_df['employee_id'] = f"user_{i+1}" 
+            df_list.append(temp_df)
+        return pd.concat(df_list, ignore_index=True)
+
+    def calculate_metrics(self):
+        """Calculates and prints the key team-wide metrics."""
+        print("\n--- TEAM HEALTH REPORT ---")
+        
+        # Metric 1: Focus vs. Distraction Ratio
+        focus_count = self.all_data[self.all_data['label'] == 'focused'].shape[0]
+        distraction_count = self.all_data[self.all_data['label'] == 'distracted'].shape[0]
+        total = focus_count + distraction_count
+        print(f"📊 Focus/Distraction Ratio: {100 * focus_count / total:.1f}% Focused / {100 * distraction_count / total:.1f}% Distracted")
+        
+        # Metric 2: Top Distraction Sources
+        distraction_apps = self.all_data[self.all_data['label'] == 'distracted']['app_name']
+        top_distractions = distraction_apps.value_counts().nlargest(3)
+        print("\n🚫 Top Team Distractions:")
+        for app, count in top_distractions.items():
+            print(f"   - {app} ({count} instances)")
+            
+        # Metric 3: Average Daily Focus Sessions per Person
+        self.all_data['date'] = pd.to_datetime(self.all_data['timestamp'], unit='s').dt.date
+        focus_sessions = self.all_data[self.all_data['label'] == 'focused']
+        avg_sessions = focus_sessions.groupby(['date', 'employee_id']).size().mean()
+        print(f"\n🧠 Average Daily Focus Sessions per Team Member: {avg_sessions:.2f}")
+        print("----------------------")
+
+
+if __name__ == '__main__':
+    # 1. Simulate data for a team of 5 employees
+    num_employees = 5
+    employee_log_files = []
+    for i in range(1, num_employees + 1):
+        simulate_employee_data(i)
+        employee_log_files.append(f"employee_{i}_log.csv")
+
+    # 2. Run the aggregator on the simulated data
+    aggregator = TeamAggregator(employee_log_files)
+    aggregator.calculate_metrics()
+
+    # 3. Clean up the fake files
+    for file in employee_log_files:
+        os.remove(file)
+    print("\nCleaned up simulated log files.")
+
