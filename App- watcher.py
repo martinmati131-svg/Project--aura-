@@ -1,152 +1,124 @@
-# app_watcher.py
-# Project Aura: v1.0 (Live Predictions)
-# This agent collects data, logs user feedback, and makes live predictions.
+
+# aura_platform_core.py
+# Project Aura: Platform v0.1
+# The core engine that senses, predicts, and serves the Aura state via a local API.
 
 import time
 import threading
-import csv
-import os
 import pandas as pd
 import joblib
+from flask import Flask, jsonify
+
+# --- (You can copy these from your previous file) ---
 from AppKit import NSWorkspace
 from pynput import keyboard, mouse
-from pystray import MenuItem as item
-import pystray
-from PIL import Image, ImageDraw
+# --- (Keep the ActivityMonitor class and get_active_app_name function as they are) ---
 
-# --- Configuration ---
-LOG_FILE = 'aura_log.csv'
-MODEL_FILE = 'aura_model.joblib'
-COLUMNS_FILE = 'model_columns.joblib'
-PREDICTION_INTERVAL = 30  # seconds
-
-# --- Global State & Thread-Safety ---
+# --- Placeholder for the full ActivityMonitor class ---
+# Make sure to copy your full ActivityMonitor class here
 class ActivityMonitor:
     def __init__(self):
         self.key_presses = 0
         self.mouse_clicks = 0
         self.lock = threading.Lock()
-
     def on_press(self, key):
-        with self.lock:
-            self.key_presses += 1
-
+        with self.lock: self.key_presses += 1
     def on_click(self, x, y, button, pressed):
         if pressed:
-            with self.lock:
-                self.mouse_clicks += 1
-    
+            with self.lock: self.mouse_clicks += 1
     def get_and_reset_counts(self):
         with self.lock:
-            keys = self.key_presses
-            clicks = self.mouse_clicks
-            self.key_presses = 0
-            self.mouse_clicks = 0
+            keys, clicks = self.key_presses, self.mouse_clicks
+            self.key_presses, self.mouse_clicks = 0, 0
             return keys, clicks
 
 def get_active_app_name():
     try:
         active_app = NSWorkspace.sharedWorkspace().frontmostApplication()
         return active_app.localizedName()
-    except Exception:
-        return "Unknown"
+    except Exception: return "Unknown"
+# --- End of placeholder ---
 
-# --- Data Logging ---
-def write_log(label, app, keys, clicks):
-    timestamp = int(time.time())
-    with open(LOG_FILE, 'a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([timestamp, label, app, keys, clicks])
+
+# --- Global State for API ---
+# A thread-safe dictionary to hold the latest Aura state.
+aura_state = {"status": "initializing", "prediction": None, "confidence": 0.0}
+state_lock = threading.Lock()
 
 # --- Prediction Logic ---
-def predict_current_state(model, columns):
+def predict_current_state(model, columns, monitor):
     app = get_active_app_name()
     keys, clicks = monitor.get_and_reset_counts()
     
-    # Create a DataFrame for the current state with the same structure as the training data
     live_data = pd.DataFrame([[app, keys, clicks]], columns=['app_name', 'key_presses', 'mouse_clicks'])
     live_features = pd.get_dummies(live_data, columns=['app_name'])
-    
-    # Align columns to match the model's training data exactly
     live_features_aligned = live_features.reindex(columns=columns, fill_value=0)
     
-    # Make prediction
-    prediction = model.predict(live_features_aligned)
+    prediction = model.predict(live_features_aligned)[0]
     probability = model.predict_proba(live_features_aligned)
+    confidence = max(probability[0])
     
-    confidence = max(probability[0]) * 100
-    print(f"[{time.strftime('%H:%M:%S')}] LIVE PREDICTION: {prediction[0].upper()} (Confidence: {confidence:.1f}%) | App: {app} | Activity: {keys} keys, {clicks} clicks")
+    # --- Update the global state for the API ---
+    with state_lock:
+        aura_state["status"] = "running"
+        aura_state["prediction"] = prediction
+        aura_state["confidence"] = float(confidence)
+    
+    print(f"[{time.strftime('%H:%M:%S')}] Prediction updated: {prediction.upper()} ({confidence:.1%})")
 
-# --- Menu Bar Icon Logic ---
-def on_focused_clicked(icon, item):
-    keys, clicks = monitor.get_and_reset_counts()
-    app = get_active_app_name()
-    write_log('focused', app, keys, clicks)
-    print(f"MANUAL LOG: focused | App: {app}")
+# --- API Server ---
+app = Flask(__name__)
 
-def on_distracted_clicked(icon, item):
-    keys, clicks = monitor.get_and_reset_counts()
-    app = get_active_app_name()
-    write_log('distracted', app, keys, clicks)
-    print(f"MANUAL LOG: distracted | App: {app}")
+@app.route("/api/v1/aura/status", methods=['GET'])
+def get_aura_status():
+    """The main API endpoint to get the current Aura state."""
+    with state_lock:
+        return jsonify(aura_state)
 
-def create_image():
-    image = Image.new('RGB', (16, 16), color = 'black')
-    dc = ImageDraw.Draw(image)
-    dc.rectangle([(4, 4), (12, 12)], fill='white')
-    return image
-
+# --- Main Application Logic ---
 if __name__ == "__main__":
-    print("Starting Aura Agent v1.0 (Live Predictions)...")
+    print("Starting Aura Platform Core...")
+    
+    MODEL_FILE = 'aura_model.joblib'
+    COLUMNS_FILE = 'model_columns.joblib'
+    PREDICTION_INTERVAL = 30 # seconds
 
-    # Initialize CSV file if it doesn't exist
-    if not os.path.exists(LOG_FILE):
-        with open(LOG_FILE, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['timestamp', 'label', 'app_name', 'key_presses', 'mouse_clicks'])
-
-    # --- Load the trained model ---
     try:
         model = joblib.load(MODEL_FILE)
         model_columns = joblib.load(COLUMNS_FILE)
         print("✅ Model loaded successfully.")
     except FileNotFoundError:
-        print("⚠️ Model not found. Running in data collection mode only.")
-        print("   Run train_model.py to build the model.")
-        model = None
-        model_columns = None
+        print("FATAL: Model not found. The platform cannot start without a trained model.")
+        exit()
 
-    # --- Start background activity monitoring ---
     monitor = ActivityMonitor()
     keyboard_listener = keyboard.Listener(on_press=monitor.on_press)
     mouse_listener = mouse.Listener(on_click=monitor.on_click)
     keyboard_listener.start()
     mouse_listener.start()
 
-    # --- Start the prediction loop in a separate thread if model is loaded ---
-    if model:
-        def prediction_loop():
-            predict_current_state(model, model_columns)
-            # Schedule the next prediction
-            threading.Timer(PREDICTION_INTERVAL, prediction_loop).start()
+    # --- Start the prediction loop in a separate thread ---
+    def prediction_loop():
+        while True:
+            predict_current_state(model, model_columns, monitor)
+            time.sleep(PREDICTION_INTERVAL)
+
+    prediction_thread = threading.Thread(target=prediction_loop, daemon=True)
+    prediction_thread.start()
+    print(f"Prediction engine is running. Updates every {PREDICTION_INTERVAL} seconds.")
+
+    # --- Start the API server ---
+    print("\n🚀 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5 Aura API is live and listening on http://127.0.0.1:5000")
+    app.run(host='127.0.0.1', port=5000)
+
+
+
+     
+   
+     
+      
+           
         
-        # Start the first prediction after a short delay
-        threading.Timer(PREDICTION_INTERVAL, prediction_loop).start()
-        print(f"Live predictions will start in {PREDICTION_INTERVAL} seconds.")
-
-    # --- Setup and run the Menu Bar Icon ---
-    icon = pystray.Icon(
-        "Aura",
-        icon=create_image(),
-        title="Aura Agent",
-        menu=pystray.Menu(
-            item('I\'m Focused', on_focused_clicked),
-            item('I\'m Distracted', on_distracted_clicked)
-        )
-    )
-    
-    icon.run()
-
 
  
    
