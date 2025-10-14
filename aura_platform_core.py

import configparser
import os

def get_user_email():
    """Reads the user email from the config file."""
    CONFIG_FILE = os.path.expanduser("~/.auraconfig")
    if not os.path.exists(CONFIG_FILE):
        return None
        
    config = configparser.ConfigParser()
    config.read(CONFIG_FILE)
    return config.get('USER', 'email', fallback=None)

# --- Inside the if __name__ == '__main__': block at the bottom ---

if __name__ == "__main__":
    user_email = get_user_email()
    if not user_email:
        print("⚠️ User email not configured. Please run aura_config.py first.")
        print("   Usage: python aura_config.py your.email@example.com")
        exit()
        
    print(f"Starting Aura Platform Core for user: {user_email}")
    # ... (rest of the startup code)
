@@ -1,0 +1,26 @@
+# In aura_platform_core.py
+
+import configparser
+import os
+
+def get_user_email():
+    """Reads the user email from the config file."""
+    CONFIG_FILE = os.path.expanduser("~/.auraconfig")
+    if not os.path.exists(CONFIG_FILE):
+        return None
+        
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config.get('USER', 'email', fallback=None)
+
+# --- Inside the if __name__ == '__main__': block at the bottom ---
+
+if __name__ == "__main__":
+    user_email = get_user_email()
+    if not user_email:
+        print("⚠️ User email not configured. Please run aura_config.py first.")
+        print("   Usage: python aura_config.py your.email@example.com")
+        exit()
+        
+    print(f"Starting Aura Platform Core for user: {user_email}")
+    # ... (rest of the startup code)
