@@ -1,0 +1,1 @@
+pyinstaller --onefile --windowed --add-data "aura_model.joblib;." --add-data "model_columns.joblib;." aura platform _core.py
