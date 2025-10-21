@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Robot Control Panel</title>
+    <style>
+        /* This is the CSS (the "Skin") */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        #brain-container {
+            width: 400px;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+            color: #1a1a1a;
+        }
+        #status-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 40px;
+            border-radius: 12px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* These classes will be changed by JavaScript */
+        .focused {
+            background-color: #e6f7ff;
+            color: #0056b3;
+            border: 2px solid #b3e0ff;
+        }
+        .distracted {
+            background-color: #fff0f0;
+            color: #d90000;
+            border: 2px solid #ffb3b3;
+        }
+        .initializing {
+            background-color: #f5f5f5;
+            color: #888;
+            border: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="brain-container">
+        <h1>🧠 Aura Brain Status</h1>
+        <div id="status-display" class="initializing">
+            INITIALIZING...
+        </div>
+        <p>Confidence: <span id="confidence">--</span>%</p>
+    </div>
+
+    <script>
+        // Get the HTML elements we want to update
+        const statusElement = document.getElementById("status-display");
+        const confidenceElement = document.getElementById("confidence");
+
+        async function getAuraStatus() {
+            try {
+                // This is the "nerve" connecting to our Python "brain"
+                const response = await fetch("http://127.0.0.1:5000/api/v1/aura/status");
+                const data = await response.json();
+
+                // Update the "face" with the brain's thoughts
+                const state = data.prediction || 'initializing';
+                const confidence = (data.confidence * 100).toFixed(1);
+
+                statusElement.textContent = state.toUpperCase();
+                confidenceElement.textContent = confidence;
+
+                // Update the CSS "skin" to change colors
+                statusElement.className = "status-display " + state;
+
+            } catch (error) {
+                console.error("Could not connect to Aura brain:", error);
+                statusElement.textContent = "DISCONNECTED";
+                statusElement.className = "status-display distracted";
+                confidenceElement.textContent = "??";
+            }
+        }
+
+        // Check the brain's status every 3 seconds
+        setInterval(getAuraStatus, 3000);
+        
+        // Check immediately on page load
+        getAuraStatus();
+    </script>
+</body>
+</html>
