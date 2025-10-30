@@ -8,7 +8,7 @@ import pandas as pd
 app = Flask(__name__)
 
 # Load the trained AI model
-model = joblib.load('model.pkl')
+model = aura_model.joblib('model.pkl')
 
 @app.route('/track', methods=['POST'])
 def track():
