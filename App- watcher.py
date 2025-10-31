@@ -113,7 +113,37 @@ if __name__ == "__main__":
 
 
 
-     
+  # ... (keep all your other code: Flask setup, ActivityMonitor, etc.) ...
+# ... (keep your existing @app.route("/api/v1/aura/status") ...
+
+#
+# --- ADD THIS NEW FUNCTION ---
+#
+@app.route("/api/v1/aura/command", methods=['POST'])
+def handle_command():
+    """Receives a command from the robot dashboard."""
+    try:
+        data = request.get_json()
+        command = data.get('command')
+
+        if command == "TOGGLE_SHIELD":
+            # In a real app, this would message focus_shield.py
+            # For now, we just print to the console to prove it works.
+            print(f"\n--- 🤖 DASHBOARD COMMAND RECEIVED: {command} ---\n")
+            return jsonify({"status": "success", "command_received": command}), 200
+        else:
+            return jsonify({"status": "error", "message": "Unknown command"}), 400
+            
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+#
+# --- END OF NEW FUNCTION ---
+#
+
+if __name__ == "__main__":
+    # ... (all your startup code) ...
+    # ... (app.run(host='127.0.0.1', port=5000))
+   
    
      
       
