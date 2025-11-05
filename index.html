@@ -1,295 +1,53 @@
 
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura Robot Control Panel</title>
-    <style>
-       <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura Robot Control Panel</title>
-    <style>
-           /* --- Global Styles (from Figma) --- */
-body {
-    /* Get the background color from your Figma design */
-    background-color: #f0f2f5; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-}
-
-/* --- Layout Structure --- */
-.app-container {
-    display: flex; /* This is the key: it creates the sidebar + main content layout */
-    height: 100vh;
-}
-
-/* --- Sidebar Styles (from Figma) --- */
-.sidebar {
-    /* Get the width and background color from your Figma sidebar */
-    width: 250px;
-    background-color: #ffffff;
-    border-right: 1px solid #e0e0e0;
-    padding: 20px;
-}
-.sidebar-header h2 {
-    text-align: center;
-    color: #1a1a1a;
-}
-.sidebar-nav {
-    list-style-type: none;
-    padding: 0;
-}
-.sidebar-nav li a {
-    display: block;
-    padding: 12px 15px;
-    text-decoration: none;
-    color: #555;
-    font-weight: 600;
-    border-radius: 8px;
-}
-.sidebar-nav li.active a,
-.sidebar-nav li a:hover {
-    /* Get the "active" or "hover" color from Figma */
-    background-color: #e6f7ff;
-    color: #0056b3;
-}
-
-/* --- Main Content Styles (from Figma) --- */
-.main-content {
-    flex-grow: 1; /* This makes it take up the rest of the space */
-    padding: 30px;
-    overflow-y: auto; /* Lets the content area scroll if needed */
-}
-.main-header h1 {
-    margin-top: 0;
-}
-
-/* --- Card Styles (from Figma) --- */
-.card {
-    /* Get the background, border-radius, and shadow from your Figma "card" component */
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 25px;
-    margin-top: 20px;
-}
-
-/* --- Brain Status (Copied from old file) --- */
-#status-display {
-    font-size: 2em; /* Adjusted for the new card layout */
-    font-weight: bold;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 15px;
-    transition: all 0.3s ease;
-}
-.focused { background-color: #e6f7ff; color: #0056b3; border: 1px solid #b3e0ff; }
-.distracted { background-color: #fff0f0; color: #d90000; border: 1px solid #ffb3b3; }
-.initializing { background-color: #f5f5f5; color: #888; border: 1px solid #ddd; }
-
-        
-        
-        }
-    </style>
+    <title>Aura Platform Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="brain-container" class="container">
-        <h1>🧠 Aura Brain Status</h1>
-        <div id="status-display" class="initializing">
-            INITIALIZING...
-        </div>
-        <p>Confidence: <span id="confidence">--</span>%</p>
+
+    <div class="app-container">
+
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🧠 Aura</h2>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#">Focus Shield</a></li>
+                <li><a href="#">Digital Twin</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Welcome Back</h1>
+            </header>
+
+            <div class="card" id="brain-status-card">
+                <h3>Aura Brain Status</h3>
+                <div id="status-display" class="initializing">
+                    INITIALIZING...
+                </div>
+                <p>Confidence: <span id="confidence">--</span>%</p>
+            </div>
+
+            <div class="card" id="news-card">
+                <h3>📰 News Feed</h3>
+                <div id="rss-content">Loading feed...</div>
+            </div>
+
+        </main>
+
     </div>
 
-    <div id="news-container" class="container">
-        <h2>📰 Aura News Feed</h2>
-        <div id="rss-content">Loading feed...</div>
-    </div>
-
-    <script>
-        // --- Get Aura Status ---
-        const statusElement = document.getElementById("status-display");
-        const confidenceElement = document.getElementById("confidence");
-
-        async function getAuraStatus() {
-            try {
-                const response = await fetch("http://127.0.0.1:5000/api/v1/aura/status");
-                const data = await response.json();
-                const state = data.prediction || 'initializing';
-                const confidence = (data.confidence * 100).toFixed(1);
-
-                statusElement.textContent = state.toUpperCase();
-                confidenceElement.textContent = confidence;
-                statusElement.className = "status-display " + state;
-
-            } catch (error) {
-                console.error("Could not connect to Aura brain:", error);
-                statusElement.textContent = "DISCONNECTED";
-                statusElement.className = "status-display distracted";
-                confidenceElement.textContent = "??";
-            }
-        }
-
-        // --- NEW: Get RSS Feed ---
-        const rssContentElement = document.getElementById("rss-content");
-        
-        // We'll use a tech news feed. We must use a proxy to avoid security errors.
-        const RSS_FEED_URL = "https://feeds.arstechnica.com/arstechnica/index";
-        const CORS_PROXY_URL = "https://api.allorigins.win/raw?url=";
-
-        async function getRssFeed() {
-            try {
-                const response = await fetch(CORS_PROXY_URL + encodeURIComponent(RSS_FEED_URL));
-                const str = await response.text();
-                const data = new window.DOMParser().parseFromString(str, "text/xml");
-
-                let html = "";
-                const items = data.querySelectorAll("item");
-
-                // Loop through the first 5 news items
-                for (let i = 0; i < 5; i++) {
-                    const item = items[i];
-                    if (!item) continue;
-
-                    const title = item.querySelector("title").textContent;
-                    const link = item.querySelector("link").textContent;
-                    // Get a short description, strip HTML tags from it
-                    const description = item.querySelector("description").textContent
-                                        .replace(/<[^>]+>/g, '') 
-                                        .substring(0, 100) + "..."; 
-
-                    html += `
-                        <div class="news-item">
-                            <a href="${link}" target="_blank">${title}</a>
-                            <p>${description}</p>
-                        </div>
-                    `;
-                }
-
-                rssContentElement.innerHTML = html;
-
-            } catch (error) {
-                console.error("Could not fetch RSS feed:", error);
-                rssContentElement.innerHTML = "Error loading news feed.";
-            }
-        }
-
-        // --- Run everything ---
-        
-        // Check brain status every 3 seconds
-        setInterval(getAuraStatus, 3000);
-        
-        // Check brain status immediately on page load
-        getAuraStatus();
-        
-        // Get the news feed on page load
-        getRssFeed();
-    </script>
+    <script src="dashboard.js"></script>
 </body>
 </html>
-
-
-        /* NEW STYLE FOR THE BUTTON */
-        .command-button {
-            background-color: #007aff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 1em;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.2s;
-        }
-        .command-button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    
-    <div id="brain-container" class="container">
-        <h1>🧠 Aura Brain Status</h1>
-        <div id="status-display" class="initializing">
-            INITIALIZING...
-        </div>
-        <p>Confidence: <span id="confidence">--</span>%</p>
-
-        <button id="shield-toggle" class="command-button">
-            Toggle Focus Shield
-        </button>
-        </div>
-
-    <div id="news-container" class="container">
-        </div>
-
-    <script>
-        // ... (all your existing JavaScript code) ...
-        // ... (getAuraStatus function) ...
-        // ... (getRssFeed function) ...
-
-        //
-        // --- ADD THIS NEW FUNCTION ---
-        //
-        const shieldButton = document.getElementById("shield-toggle");
-
-        async function sendAuraCommand(command) {
-            try {
-                const response = await fetch("http://12RssFeed",
-        ];
-
-        async function getRssFeed() {
-            try {
-                const response = await fetch(CORS_PROXY_URL + encodeURIComponent(RSS_FEED_URL));
-                const str = await response.text();
-                const data = new window.DOMParser().parseFromString(str, "text/xml");
-
-                let html = "";
-                const items = data.querySelectorAll("item");
-
-                // Loop through the first 5 news items
-                for (let i = 0; i < 5; i++) {
-                    const item = items[i];
-                    if (!item) continue;
-
-                    const title = item.querySelector("title").textContent;
-                    const link = item.querySelector("link").textContent;
-                    // Get a short description, strip HTML tags from it
-                    const description = item.querySelector("description").textContent
-                                        .replace(/<[^>]+>/g, '') 
-                                        .substring(0, 100) + "..."; 
-
-                    html += `
-                        <div class="news-item">
-                            <a href="${link}" target="_blank">${title}</a>
-                            <p>${description}</p>
-                        </div>
-                    `;
-                }
-
-                rssContentElement.innerHTML = html;
-
-            } catch (error) {
-                console.error("Could not fetch RSS feed:", error);
-                rssContentElement.innerHTML = "Error loading news feed.";
-            }
-        }
-
-        // --- Run everything ---
         
-        // Check brain status every 3 seconds
-        setInterval(getAuraStatus, 3000);
-        
-        // Check brain status immediately on page load
-        getAuraStatus();
-        
-        // Get the news feed on page load
-        getRssFeed();
-    </script>
-</body>
-</html>
+
+                        
