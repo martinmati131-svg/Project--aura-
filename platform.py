@@ -17,7 +17,35 @@ def track():
     data = request.get_json()
     mouse_data = data['mouse']
     keyboard_data = data['keyboard']
+
+   # client/app_watcher.py
+
+# ... (inside the main while True loop)
+
+    # 1. Get raw system metrics (app, mouse, keyboard)
+    # ... (Your existing code to get active_app, key_count, mouse_distance)
     
+    # 2. Get the new Calendar State
+    calendar_state = 'unknown' # Default value
+    if calendar_service:
+        calendar_state = calendar_client.get_current_calendar_state(calendar_service)
+        
+    # 3. Prompt for State (User Feedback)
+    user_state = get_user_state_input(active_app)
+    
+    # 4. Prepare the row for the CSV
+    row_data = [
+        int(time.time()),
+        user_state,
+        active_app,
+        key_count,
+        mouse_distance,
+        calendar_state # <-- NEW FEATURE COLUMN
+    ]
+
+    # ... (The rest of your existing code to save to CSV)
+    # ... (print(f"Logged: {row_data}"))
+ 
     # Extract features from the data
     features = extract_features(mouse_data, keyboard_data)
     
