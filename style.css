@@ -1,77 +1,162 @@
-/* --- Global Styles (from Figma) --- */
-body {
-    /* Get the background color from your Figma design */
-    background-color: #f0f2f5; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
+/* --- Global Styles (Get from Figma) --- */
+:root {
+    --bg-color: #f4f7fa; /* Light grey background */
+    --sidebar-bg: #ffffff; /* White sidebar */
+    --card-bg: #ffffff;    /* White cards */
+    --text-primary: #1a1f36;  /* Dark text */
+    --text-secondary: #6a738c; /* Grey text */
+    --brand-primary: #4a69ff;  /* Blue for highlights */
+    --brand-light: #e9edff;   /* Light blue for hovers */
+    --border-color: #e0e0e0;
 }
 
-/* --- Layout Structure --- */
+body {
+    background-color: var(--bg-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* --- App Layout --- */
 .app-container {
-    display: flex; /* This is the key: it creates the sidebar + main content layout */
+    display: flex; /* Sidebar + Main Content */
     height: 100vh;
 }
 
-/* --- Sidebar Styles (from Figma) --- */
+/* --- Sidebar Styles (Get from Figma) --- */
 .sidebar {
-    /* Get the width and background color from your Figma sidebar */
-    width: 250px;
-    background-color: #ffffff;
-    border-right: 1px solid #e0e0e0;
-    padding: 20px;
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
 }
-.sidebar-header h2 {
-    text-align: center;
-    color: #1a1a1a;
+
+.sidebar-header {
+    margin-bottom: 20px;
 }
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
 .sidebar-nav {
     list-style-type: none;
     padding: 0;
-}
-.sidebar-nav li a {
-    display: block;
-    padding: 12px 15px;
-    text-decoration: none;
-    color: #555;
-    font-weight: 600;
-    border-radius: 8px;
-}
-.sidebar-nav li.active a,
-.sidebar-nav li a:hover {
-    /* Get the "active" or "hover" color from Figma */
-    background-color: #e6f7ff;
-    color: #0056b3;
+    margin: 0;
 }
 
-/* --- Main Content Styles (from Figma) --- */
-.main-content {
-    flex-grow: 1; /* This makes it take up the rest of the space */
-    padding: 30px;
-    overflow-y: auto; /* Lets the content area scroll if needed */
+.sidebar-nav li {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
+
+.sidebar-nav li .material-icons-outlined {
+    margin-right: 12px;
+    font-size: 22px;
+}
+
+.sidebar-nav li:hover {
+    background-color: var(--brand-light);
+    color: var(--brand-primary);
+}
+
+.sidebar-nav li.active {
+    background-color: var(--brand-light);
+    color: var(--brand-primary);
+}
+
+/* --- Main Content Styles --- */
+.main-content {
+    flex-grow: 1; /* Takes up the rest of the space */
+    padding: 30px 40px;
+    overflow-y: auto; /* Lets the content scroll */
+}
+
 .main-header h1 {
     margin-top: 0;
+    font-size: 32px;
 }
 
-/* --- Card Styles (from Figma) --- */
+/* --- Card Grid (For 2 columns) --- */
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 25px; /* Space between cards */
+}
+
+/* --- Card Styles (Get from Figma) --- */
 .card {
-    /* Get the background, border-radius, and shadow from your Figma "card" component */
-    background: #ffffff;
+    background: var(--card-bg);
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     padding: 25px;
-    margin-top: 20px;
 }
 
-/* --- Brain Status (Copied from old file) --- */
+.card h3 {
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+/* --- Brain Status Card --- */
 #status-display {
-    font-size: 2em; /* Adjusted for the new card layout */
+    font-size: 2em;
     font-weight: bold;
     padding: 20px;
     border-radius: 12px;
     margin-top: 15px;
+    text-align: center;
     transition: all 0.3s ease;
 }
+
 .focused { background-color: #e6f7ff; color: #0056b3; border: 1px solid #b3e0ff; }
 .distracted { background-color: #fff0f0; color: #d90000; border: 1px solid #ffb3b3; }
 .initializing { background-color: #f5f5f5; color: #888; border: 1px solid #ddd; }
+
+.command-button {
+    background-color: var(--brand-primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%; /* Make button full-width of card */
+    transition: background-color 0.2s;
+}
+.command-button:hover {
+    background-color: #3a58d1; /* Darker blue */
+}
+
+/* --- News Feed Card --- */
+#rss-content {
+    max-height: 300px; /* Make the feed scrollable */
+    overflow-y: auto;
+}
+.news-item {
+    padding: 10px 5px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.news-item:last-child {
+    border-bottom: none;
+}
+.news-item a {
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.news-item a:hover {
+    color: var(--brand-primary);
+}
