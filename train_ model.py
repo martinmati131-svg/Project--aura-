@@ -30,7 +30,36 @@ def train_aura_model():
 
     print(f"Loaded {len(df)} data entries.")
 
-    # 2. Prepare the Data (Feature Engineering)
+  # train_model.py
+
+# ... (Your existing imports)
+
+# --- Feature Columns Updated ---
+# The order MUST match the columns in aura_log.csv
+FEATURE_COLUMNS = [
+    'active_app',
+    'key_count',
+    'mouse_distance',
+    'calendar_state' # <-- NEW FEATURE COLUMN NAME
+]
+# ...
+
+def preprocess_data(df):
+    # ...
+    
+    # Identify categorical and numerical features
+    # NOTE: active_app and calendar_state are now categorical
+    
+    # We now have 2 categorical features: 'active_app', 'calendar_state'
+    categorical_features = ['active_app', 'calendar_state'] 
+    
+    # We now have 2 numerical features: 'key_count', 'mouse_distance'
+    numerical_features = ['key_count', 'mouse_distance']
+    
+    # ... (The rest of the function remains the same, as it dynamically handles the feature list)
+    
+    # ...
+  # 2. Prepare the Data (Feature Engineering)
     # Convert app names into numerical features using one-hot encoding
     features = pd.get_dummies(df[['app_name', 'key_presses', 'mouse_clicks']], columns=['app_name'])
     labels = df['label']
