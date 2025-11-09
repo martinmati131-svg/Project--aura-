@@ -8,6 +8,11 @@ import threading
 import pandas as pd
 import joblib
 from flask import Flask, jsonify
+# client/app_watcher.py
+
+# ... (Existing imports like time, csv, etc.)
+from . import calendar_client # Import our new calendar module
+# ...
 
 # --- (You can copy these from your previous file) ---
 from AppKit import NSWorkspace
