@@ -14,6 +14,53 @@ from flask import Flask, jsonify
 from . import calendar_client # Import our new calendar module
 # ...
 
+# client/app_watcher.py
+
+# ... (inside the main block)
+if __name__ == "__main__":
+    # --- NEW: Initialize Calendar Service ---
+    try:
+        print("Connecting to Google Calendar for the first time...")
+        calendar_service = calendar_client.get_calendar_service()
+        print("✅ Calendar service authenticated.")
+    except Exception as e:
+        print(f"❌ Could not initialize Calendar Service. Running without calendar data. Error: {e}")
+        calendar_service = None
+        
+    # --- The rest of your existing setup code continues here...
+    
+    # ... (Then the main while loop starts)
+    while True:
+        # ...
+# client/app_watcher.py
+
+# ... (inside the main while True loop)
+
+    # 1. Get raw system metrics (app, mouse, keyboard)
+    # ... (Your existing code to get active_app, key_count, mouse_distance)
+    
+    # 2. Get the new Calendar State
+    calendar_state = 'unknown' # Default value
+    if calendar_service:
+        calendar_state = calendar_client.get_current_calendar_state(calendar_service)
+        
+    # 3. Prompt for State (User Feedback)
+    user_state = get_user_state_input(active_app)
+    
+    # 4. Prepare the row for the CSV
+    row_data = [
+        int(time.time()),
+        user_state,
+        active_app,
+        key_count,
+        mouse_distance,
+        calendar_state # <-- NEW FEATURE COLUMN
+    ]
+
+    # ... (The rest of your existing code to save to CSV)
+    # ... (print(f"Logged: {row_data}"))
+
+
 # --- (You can copy these from your previous file) ---
 from AppKit import NSWorkspace
 from pynput import keyboard, mouse
