@@ -11,6 +11,26 @@ from flask import Flask, jsonify
 # client/app_watcher.py
 
 # ... (Existing imports like time, csv, etc.)
+from . import calendar_client 
+from . import memory_service # <--- NEW IMPORT
+# ...
+if __name__ == "__main__":
+    # ... (Calendar Service initialization)
+    
+    # --- NEW: Initialize Memory Service ---
+    try:
+        print("Connecting to ChromaDB Memory Service...")
+        memory_db = memory_service.MemoryService()
+        print("✅ Memory service ready.")
+    except Exception as e:
+        print(f"❌ Could not initialize Memory Service. Running without long-term memory. Error: {e}")
+        memory_db = None
+        
+    # ... (The rest of your existing setup code continues here...)
+
+# client/app_watcher.py
+
+# ... (Existing imports like time, csv, etc.)
 from . import calendar_client # Import our new calendar module
 # ...
 
