@@ -1,0 +1,83 @@
+# create_attention_dataset.py
+
+import pandas as pd
+import numpy as np
+import os
+import joblib
+
+# NOTE: We need to import the core services for this script to work.
+# Assuming you've structured the services to be importable:
+from aura_platform_core import MemoryService, TransformerFeatureExtractor # Needs careful import path handling
+# If the imports above fail, you might need to copy/paste the class definitions here.
+
+# --- CONFIGURATION ---
+LOG_FILE = 'aura_log.csv'
+TARGET_DATASET_FILE = 'attention_dataset.joblib'
+TARGET_COLUMN = 'user_state'
+FEATURE_COLUMNS = ['active_app', 'key_count', 'mouse_distance', 'calendar_state']
+
+def create_dataset():
+    """
+    Reads the raw log, generates context for each historical entry, 
+    encodes it using the Transformer, and saves the new attention dataset.
+    """
+    if not os.path.exists(LOG_FILE):
+        print(f"❌ Error: Log file not found at {LOG_FILE}.")
+        return
+
+    # 1. Initialize Services
+    try:
+        memory_db = MemoryService()
+        extractor = TransformerFeatureExtractor()
+        print("✅ Services initialized (Memory and Transformer).")
+    except Exception as e:
+        print(f"❌ Error initializing services: {e}")
+        return
+
+    # 2. Load and Prepare Data
+    df = pd.read_csv(LOG_FILE)
+    df = df.dropna(subset=[TARGET_COLUMN])
+    print(f"Loaded {len(df)} historical log entries.")
+
+    # 3. Create the New Dataset
+    X_attention_list = []
+    y_labels = []
+
+    # This loop is computationally intensive!
+    for index, row in df.iterrows():
+        # A. Define the current activity for this historical log entry
+        current_activity_desc = (
+            f"Current Activity: App is {row['active_app']}, Key Count is {row['key_count']}, "
+            f"Mouse Distance is {row['mouse_distance']}. Calendar State is '{row['calendar_state']}'."
+        )
+
+        # B. Recall Context (Simulating what Aura did *before* this log entry)
+        # Note: We must exclude the current log entry itself from the recall search 
+        # to prevent data leakage. This requires a small adjustment in MemoryService 
+        # to filter by timestamp or ID, but we'll simplify for demonstration.
+        recalled_context = memory_db.recall_context(current_activity_desc, n_results=3)
+        context_str = "\n".join(recalled_context)
+        
+        full_input_text = f"Current State: {current_activity_desc}\nPast Memories: {context_str}"
+
+        # C. Encode with Transformer (Attention Step)
+        # The Transformer processes the full text and outputs the Attention Vector
+        attention_vector = extractor.encode_text(full_input_text)
+        
+        X_attention_list.append(attention_vector)
+        y_labels.append(row[TARGET_COLUMN])
+
+    # 4. Finalize and Save Dataset
+    X_attention = np.array(X_attention_list)
+    y_attention = np.array(y_labels)
+
+    # Save the new dataset features and labels
+    joblib.dump({'X': X_attention, 'y': y_attention}, TARGET_DATASET_FILE)
+    
+    print("\n--- Dataset Creation Complete ---")
+    print(f"Total encoded samples: {X_attention.shape[0]}")
+    print(f"Attention Vector Dimension (Features): {X_attention.shape[1]}")
+    print(f"✅ New attention dataset saved to {TARGET_DATASET_FILE}")
+
+if __name__ == "__main__":
+    create_dataset()
