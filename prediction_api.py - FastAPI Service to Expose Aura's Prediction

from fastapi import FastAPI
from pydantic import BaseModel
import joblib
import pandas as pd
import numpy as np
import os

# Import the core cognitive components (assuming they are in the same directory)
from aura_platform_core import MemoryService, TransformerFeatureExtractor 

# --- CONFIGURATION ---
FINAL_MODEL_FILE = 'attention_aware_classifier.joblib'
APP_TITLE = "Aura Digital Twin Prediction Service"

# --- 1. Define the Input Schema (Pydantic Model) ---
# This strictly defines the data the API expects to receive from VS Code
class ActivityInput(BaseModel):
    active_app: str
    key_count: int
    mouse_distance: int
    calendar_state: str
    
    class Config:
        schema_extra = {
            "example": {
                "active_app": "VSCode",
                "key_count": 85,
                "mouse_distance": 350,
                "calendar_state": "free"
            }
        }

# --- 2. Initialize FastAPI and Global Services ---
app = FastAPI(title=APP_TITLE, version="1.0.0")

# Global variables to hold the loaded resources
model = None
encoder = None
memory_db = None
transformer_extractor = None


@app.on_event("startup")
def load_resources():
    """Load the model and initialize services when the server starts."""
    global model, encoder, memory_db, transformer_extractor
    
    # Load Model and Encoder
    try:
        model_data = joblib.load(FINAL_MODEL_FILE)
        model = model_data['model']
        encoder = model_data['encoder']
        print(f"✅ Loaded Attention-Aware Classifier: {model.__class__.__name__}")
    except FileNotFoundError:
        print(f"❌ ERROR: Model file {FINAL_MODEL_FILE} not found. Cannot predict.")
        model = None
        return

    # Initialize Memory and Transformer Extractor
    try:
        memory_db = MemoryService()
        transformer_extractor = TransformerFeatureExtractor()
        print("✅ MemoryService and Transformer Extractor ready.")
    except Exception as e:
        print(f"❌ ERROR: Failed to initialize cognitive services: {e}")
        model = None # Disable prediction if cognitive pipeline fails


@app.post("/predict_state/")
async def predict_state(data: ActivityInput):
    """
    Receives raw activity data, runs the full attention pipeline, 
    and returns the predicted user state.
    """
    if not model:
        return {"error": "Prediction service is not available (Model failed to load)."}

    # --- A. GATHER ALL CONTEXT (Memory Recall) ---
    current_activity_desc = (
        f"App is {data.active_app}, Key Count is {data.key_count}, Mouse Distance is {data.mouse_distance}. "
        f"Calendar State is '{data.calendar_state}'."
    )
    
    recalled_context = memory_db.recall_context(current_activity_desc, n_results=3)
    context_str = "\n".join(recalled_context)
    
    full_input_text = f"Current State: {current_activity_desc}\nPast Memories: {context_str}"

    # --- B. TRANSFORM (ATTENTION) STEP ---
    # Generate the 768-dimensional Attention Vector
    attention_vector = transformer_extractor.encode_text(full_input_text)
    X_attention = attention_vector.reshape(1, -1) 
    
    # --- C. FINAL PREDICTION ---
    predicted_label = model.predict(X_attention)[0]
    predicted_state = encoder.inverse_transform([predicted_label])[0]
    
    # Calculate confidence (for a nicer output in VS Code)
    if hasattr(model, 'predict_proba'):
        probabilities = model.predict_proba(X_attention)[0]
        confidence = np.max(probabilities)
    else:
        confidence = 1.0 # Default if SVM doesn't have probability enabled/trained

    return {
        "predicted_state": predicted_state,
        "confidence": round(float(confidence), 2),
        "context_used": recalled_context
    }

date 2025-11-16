@@ -1,0 +1,111 @@
+# prediction_api.py - FastAPI Service to Expose Aura's Prediction
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+import pandas as pd
+import numpy as np
+import os
+
+# Import the core cognitive components (assuming they are in the same directory)
+from aura_platform_core import MemoryService, TransformerFeatureExtractor 
+
+# --- CONFIGURATION ---
+FINAL_MODEL_FILE = 'attention_aware_classifier.joblib'
+APP_TITLE = "Aura Digital Twin Prediction Service"
+
+# --- 1. Define the Input Schema (Pydantic Model) ---
+# This strictly defines the data the API expects to receive from VS Code
+class ActivityInput(BaseModel):
+    active_app: str
+    key_count: int
+    mouse_distance: int
+    calendar_state: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "active_app": "VSCode",
+                "key_count": 85,
+                "mouse_distance": 350,
+                "calendar_state": "free"
+            }
+        }
+
+# --- 2. Initialize FastAPI and Global Services ---
+app = FastAPI(title=APP_TITLE, version="1.0.0")
+
+# Global variables to hold the loaded resources
+model = None
+encoder = None
+memory_db = None
+transformer_extractor = None
+
+
+@app.on_event("startup")
+def load_resources():
+    """Load the model and initialize services when the server starts."""
+    global model, encoder, memory_db, transformer_extractor
+    
+    # Load Model and Encoder
+    try:
+        model_data = joblib.load(FINAL_MODEL_FILE)
+        model = model_data['model']
+        encoder = model_data['encoder']
+        print(f"✅ Loaded Attention-Aware Classifier: {model.__class__.__name__}")
+    except FileNotFoundError:
+        print(f"❌ ERROR: Model file {FINAL_MODEL_FILE} not found. Cannot predict.")
+        model = None
+        return
+
+    # Initialize Memory and Transformer Extractor
+    try:
+        memory_db = MemoryService()
+        transformer_extractor = TransformerFeatureExtractor()
+        print("✅ MemoryService and Transformer Extractor ready.")
+    except Exception as e:
+        print(f"❌ ERROR: Failed to initialize cognitive services: {e}")
+        model = None # Disable prediction if cognitive pipeline fails
+
+
+@app.post("/predict_state/")
+async def predict_state(data: ActivityInput):
+    """
+    Receives raw activity data, runs the full attention pipeline, 
+    and returns the predicted user state.
+    """
+    if not model:
+        return {"error": "Prediction service is not available (Model failed to load)."}
+
+    # --- A. GATHER ALL CONTEXT (Memory Recall) ---
+    current_activity_desc = (
+        f"App is {data.active_app}, Key Count is {data.key_count}, Mouse Distance is {data.mouse_distance}. "
+        f"Calendar State is '{data.calendar_state}'."
+    )
+    
+    recalled_context = memory_db.recall_context(current_activity_desc, n_results=3)
+    context_str = "\n".join(recalled_context)
+    
+    full_input_text = f"Current State: {current_activity_desc}\nPast Memories: {context_str}"
+
+    # --- B. TRANSFORM (ATTENTION) STEP ---
+    # Generate the 768-dimensional Attention Vector
+    attention_vector = transformer_extractor.encode_text(full_input_text)
+    X_attention = attention_vector.reshape(1, -1) 
+    
+    # --- C. FINAL PREDICTION ---
+    predicted_label = model.predict(X_attention)[0]
+    predicted_state = encoder.inverse_transform([predicted_label])[0]
+    
+    # Calculate confidence (for a nicer output in VS Code)
+    if hasattr(model, 'predict_proba'):
+        probabilities = model.predict_proba(X_attention)[0]
+        confidence = np.max(probabilities)
+    else:
+        confidence = 1.0 # Default if SVM doesn't have probability enabled/trained
+
+    return {
+        "predicted_state": predicted_state,
+        "confidence": round(float(confidence), 2),
+        "context_used": recalled_context
+    }
