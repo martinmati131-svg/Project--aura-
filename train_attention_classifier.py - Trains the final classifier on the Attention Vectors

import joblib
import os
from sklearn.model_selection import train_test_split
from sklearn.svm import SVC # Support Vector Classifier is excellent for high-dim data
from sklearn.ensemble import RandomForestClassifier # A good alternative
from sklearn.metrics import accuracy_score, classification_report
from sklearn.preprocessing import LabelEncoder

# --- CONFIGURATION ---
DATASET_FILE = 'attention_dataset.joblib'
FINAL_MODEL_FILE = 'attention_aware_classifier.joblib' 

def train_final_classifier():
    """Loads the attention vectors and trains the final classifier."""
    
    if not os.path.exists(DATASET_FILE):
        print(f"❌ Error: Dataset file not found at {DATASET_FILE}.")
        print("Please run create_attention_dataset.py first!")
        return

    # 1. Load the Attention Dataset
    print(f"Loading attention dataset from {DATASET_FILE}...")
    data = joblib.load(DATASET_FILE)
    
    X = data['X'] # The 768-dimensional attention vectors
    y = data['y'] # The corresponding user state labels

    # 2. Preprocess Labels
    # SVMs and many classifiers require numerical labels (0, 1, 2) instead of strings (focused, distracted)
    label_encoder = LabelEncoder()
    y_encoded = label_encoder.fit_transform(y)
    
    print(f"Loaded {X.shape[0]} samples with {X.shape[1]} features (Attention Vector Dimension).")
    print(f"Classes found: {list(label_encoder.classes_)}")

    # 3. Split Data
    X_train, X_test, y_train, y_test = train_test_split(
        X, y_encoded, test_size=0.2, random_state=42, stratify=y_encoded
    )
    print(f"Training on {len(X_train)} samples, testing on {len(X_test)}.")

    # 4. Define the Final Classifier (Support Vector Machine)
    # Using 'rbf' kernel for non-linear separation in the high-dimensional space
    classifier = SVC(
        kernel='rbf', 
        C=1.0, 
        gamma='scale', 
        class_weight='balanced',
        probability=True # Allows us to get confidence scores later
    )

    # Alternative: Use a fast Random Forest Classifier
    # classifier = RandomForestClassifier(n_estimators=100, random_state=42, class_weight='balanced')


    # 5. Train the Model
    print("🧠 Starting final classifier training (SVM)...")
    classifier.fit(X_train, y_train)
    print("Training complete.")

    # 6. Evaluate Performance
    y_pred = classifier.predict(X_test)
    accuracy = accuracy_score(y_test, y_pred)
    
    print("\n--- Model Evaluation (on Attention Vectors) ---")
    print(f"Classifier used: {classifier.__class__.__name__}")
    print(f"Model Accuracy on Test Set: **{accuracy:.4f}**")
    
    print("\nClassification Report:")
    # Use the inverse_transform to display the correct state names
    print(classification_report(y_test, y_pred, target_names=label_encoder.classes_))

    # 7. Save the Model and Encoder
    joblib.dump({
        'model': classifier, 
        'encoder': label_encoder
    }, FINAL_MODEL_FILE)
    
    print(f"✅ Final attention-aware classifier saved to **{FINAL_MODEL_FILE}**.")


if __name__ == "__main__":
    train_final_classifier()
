@@ -1,19 +1,27 @@
-# train_attention_classifier.py - Trains the final classifier on the Attention Vectors
+
+ # train_attention_classifier.py - Trains the final classifier using SGD for online learning
 
 import joblib
 import os
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC # Support Vector Classifier is excellent for high-dim data
-from sklearn.ensemble import RandomForestClassifier # A good alternative
+from sklearn.linear_model import SGDClassifier # <-- The new, incremental learning model
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.preprocessing import LabelEncoder
+from sklearn.utils import shuffle
 
 # --- CONFIGURATION ---
 DATASET_FILE = 'attention_dataset.joblib'
 FINAL_MODEL_FILE = 'attention_aware_classifier.joblib' 
 
-def train_final_classifier():
-    """Loads the attention vectors and trains the final classifier."""
+# NOTE: You MUST list ALL possible classes for the first call to partial_fit.
+# We'll extract them from the data, but hardcoding them initially is safer 
+# if your dataset is very small or imbalanced.
+POSSIBLE_CLASSES = ['focused', 'distracted', 'collaborating'] 
+
+
+def train_initial_baseline():
+    """Loads attention vectors and trains the initial SGD Classifier."""
     
     if not os.path.exists(DATASET_FILE):
         print(f"❌ Error: Dataset file not found at {DATASET_FILE}.")
@@ -28,48 +36,56 @@ def train_final_classifier():
     y = data['y'] # The corresponding user state labels
 
     # 2. Preprocess Labels
-    # SVMs and many classifiers require numerical labels (0, 1, 2) instead of strings (focused, distracted)
+    # Encode string labels (focused, distracted) to numerical labels (0, 1)
     label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
+    # Ensure the encoder knows ALL possible classes from the start
+    label_encoder.fit(POSSIBLE_CLASSES) 
+    y_encoded = label_encoder.transform(y)
     
-    print(f"Loaded {X.shape[0]} samples with {X.shape[1]} features (Attention Vector Dimension).")
-    print(f"Classes found: {list(label_encoder.classes_)}")
+    print(f"Loaded {X.shape[0]} samples with {X.shape[1]} features.")
+    print(f"Classes found and encoded: {list(label_encoder.classes_)}")
 
-    # 3. Split Data
+    # 3. Split Data (for initial testing only)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
     )
-    print(f"Training on {len(X_train)} samples, testing on {len(X_test)}.")
-
-    # 4. Define the Final Classifier (Support Vector Machine)
-    # Using 'rbf' kernel for non-linear separation in the high-dimensional space
-    classifier = SVC(
-        kernel='rbf', 
-        C=1.0, 
-        gamma='scale', 
-        class_weight='balanced',
-        probability=True # Allows us to get confidence scores later
+    
+    # 4. Define the Incremental Classifier (Stochastic Gradient Descent)
+    classifier = SGDClassifier(
+        loss='log_loss',             # Use log_loss to get probability estimates (predict_proba)
+        penalty='l2',                # Standard L2 regularization to prevent overfitting
+        alpha=0.0001,                # Regularization strength
+        max_iter=1,                  # Crucial for online learning: train one epoch at a time
+        shuffle=True,                # Shuffle data after each pass
+        n_jobs=-1,                   # Use all available cores for speed
+        random_state=42,
+        class_weight='balanced',     # Helps with unequal class distribution
+        warm_start=True              # Ensures the model retains state between partial_fit calls
     )
 
-    # Alternative: Use a fast Random Forest Classifier
-    # classifier = RandomForestClassifier(n_estimators=100, random_state=42, class_weight='balanced')
-
-
-    # 5. Train the Model
-    print("🧠 Starting final classifier training (SVM)...")
-    classifier.fit(X_train, y_train)
-    print("Training complete.")
+    # 5. Train the Model using all training data (Baseline)
+    print("🧠 Starting initial SGD Classifier training (Baseline)...")
+    
+    # We use partial_fit for the initial training as well, ensuring it initializes the model 
+    # and coefficients correctly for subsequent single-sample updates.
+    
+    # IMPORTANT: We must provide the 'classes' parameter to partial_fit here.
+    unique_classes_in_train = np.unique(y_encoded)
+    
+    # Shuffle the training set to help the SGD convergence
+    X_train_shuffled, y_train_shuffled = shuffle(X_train, y_train, random_state=42)
+    
+    # Fit the baseline model
+    classifier.partial_fit(X_train_shuffled, y_train_shuffled, classes=unique_classes_in_train)
+    print("Baseline training complete.")
 
     # 6. Evaluate Performance
     y_pred = classifier.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     
-    print("\n--- Model Evaluation (on Attention Vectors) ---")
-    print(f"Classifier used: {classifier.__class__.__name__}")
+    print("\n--- Model Evaluation (SGD Baseline) ---")
     print(f"Model Accuracy on Test Set: **{accuracy:.4f}**")
-    
     print("\nClassification Report:")
-    # Use the inverse_transform to display the correct state names
     print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
 
     # 7. Save the Model and Encoder
@@ -78,8 +94,8 @@ def train_final_classifier():
         'encoder': label_encoder
     }, FINAL_MODEL_FILE)
     
-    print(f"✅ Final attention-aware classifier saved to **{FINAL_MODEL_FILE}**.")
+    print(f"✅ Neuroplasticity-enabled classifier saved to **{FINAL_MODEL_FILE}**.")
 
 
 if __name__ == "__main__":
-    train_final_classifier()
+    train_initial_baseline()
