@@ -1,106 +1,85 @@
 import * as vscode from 'vscode';
-// Use node-fetch if global fetch is unavailable or for wider compatibility
-import fetch from 'node-fetch'; 
+// If you have issues with import, you can use 'const fetch = require("node-fetch");'
+// or rely on the global fetch if using Node 18+ inside VS Code.
+// For this snippet, we assume standard global fetch is available (VS Code 1.80+).
 
 const API_URL = 'http://127.0.0.1:8000/predict_state/';
-const POLL_INTERVAL_MS = 60000; // Poll every 60 seconds
+const POLL_INTERVAL = 60000; // 60 seconds
 
-let predictionStatusBarItem: vscode.StatusBarItem;
+let myStatusBarItem: vscode.StatusBarItem;
+let intervalId: NodeJS.Timeout | undefined;
 
-// --- 1. CORE PREDICTION FUNCTION ---
-async function fetchPrediction(context: vscode.ExtensionContext) {
-    try {
-        // A. Gather VS Code Context (Active App and Activity Proxy)
-        const currentActivity = getActivityMetrics();
-
-        // B. Prepare the Payload (Must match the FastAPI Pydantic Model)
-        const payload = {
-            active_app: currentActivity.active_app, // Always 'VSCode' in this context
-            key_count: currentActivity.key_count,
-            mouse_distance: currentActivity.mouse_distance,
-            calendar_state: "unknown", // The Python service handles the Calendar API call
-        };
-
-        // C. Fetch Prediction from Local Service
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API returned status ${response.status}`);
-        }
-
-        // D. Process the Response (e.g., { "predicted_state": "focused", "confidence": 0.92 })
-        const data = await response.json();
-        
-        // E. Update the UI
-        updateStatusBar(data.predicted_state, data.confidence);
-
-    } catch (error) {
-        console.error('Aura Prediction Error:', error);
-        updateStatusBar('⚠️ Aura Disconnected', 0); // Show error if service is down
-    }
-}
-
-
-// --- 2. ACTIVITY PROXY (Simple Implementation) ---
-function getActivityMetrics() {
-    // VS Code extensions cannot directly read low-level OS key/mouse events.
-    // We use proxies: total text in the active file as a rough proxy for "work being done."
-    let keyCountProxy = 0;
-    let mouseDistanceProxy = 0;
-
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-        // Simple proxy: Longer file size = more effort/activity
-        keyCountProxy = editor.document.getText().length;
-        
-        // Another proxy: The last time the document was saved or changed
-        // (For simplicity here, we'll just return a base value)
-        mouseDistanceProxy = 500; 
-    }
-    
-    return {
-        active_app: 'VSCode',
-        key_count: keyCountProxy,
-        mouse_distance: mouseDistanceProxy
-    };
-}
-
-
-// --- 3. STATUS BAR UI UPDATE ---
-function updateStatusBar(state: string, confidence: number) {
-    const icon = state === 'focused' ? '🧠' : state === 'distracted' ? '☕' : '👥';
-    const confidencePercent = Math.round(confidence * 100);
-    
-    predictionStatusBarItem.text = `${icon} Aura: ${state} (${confidencePercent}%)`;
-    predictionStatusBarItem.tooltip = `Prediction powered by Attention and Memory.`;
-    predictionStatusBarItem.show();
-}
-
-
-// --- 4. EXTENSION ACTIVATION (The Loop Starter) ---
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Aura Digital Twin Extension is now active!');
+	console.log('🧠 Aura Digital Twin is active!');
 
-    // Create the status bar item (UI)
-    predictionStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    context.subscriptions.push(predictionStatusBarItem);
-    
-    // Initial display
-    updateStatusBar('Loading Aura...', 0);
+	// 1. Create Status Bar Item
+	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+	myStatusBarItem.text = "$(circle-outline) Aura: Initializing...";
+	myStatusBarItem.show();
+	context.subscriptions.push(myStatusBarItem);
 
-    // Run the prediction function immediately
-    fetchPrediction(context); 
+	// 2. Start the Loop
+	fetchPrediction(); // Run once immediately
+	intervalId = setInterval(fetchPrediction, POLL_INTERVAL);
 
-    // Set the continuous prediction loop using setInterval
-    const intervalId = setInterval(() => fetchPrediction(context), POLL_INTERVAL_MS);
-    
-    // Ensure the interval is cleaned up when the extension is deactivated
-    context.subscriptions.push({
-        dispose: () => clearInterval(intervalId)
-    });
+	// 3. Register Command for Manual Feedback (Neuroplasticity)
+	let feedbackCmd = vscode.commands.registerCommand('aura.giveFeedback', async () => {
+		const state = await vscode.window.showQuickPick(['focused', 'distracted', 'collaborating'], {
+			placeHolder: 'What is your actual state right now?'
+		});
+		if (state) {
+			sendFeedback(state);
+		}
+	});
+	context.subscriptions.push(feedbackCmd);
 }
-// ------------------------------------------------------------------
+
+async function fetchPrediction() {
+	try {
+		// Mock metrics - In a real build, you'd calculate these from vscode events
+		const payload = {
+			active_app: "VSCode",
+			key_count: 300,        // Simple proxy: assume moderate activity
+			mouse_distance: 100,   // Simple proxy
+			calendar_state: "free" // Service will override this with real calendar data
+		};
+
+		const response = await fetch(API_URL, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload)
+		});
+
+		if (!response.ok) throw new Error('Service Error');
+
+		const data: any = await response.json();
+		updateStatusBar(data.predicted_state, data.confidence);
+
+	} catch (error) {
+		myStatusBarItem.text = "$(warning) Aura: Offline";
+		myStatusBarItem.tooltip = "Ensure AuraService.exe is running.";
+	}
+}
+
+function updateStatusBar(state: string, confidence: number) {
+	// Icons: https://code.visualstudio.com/api/references/icons-in-labels
+	let icon = "$(circle-large-outline)";
+	if (state === 'focused') icon = "$(rocket)";
+	if (state === 'distracted') icon = "$(bell)";
+	if (state === 'collaborating') icon = "$(organization)";
+
+	const percent = Math.round(confidence * 100);
+	myStatusBarItem.text = `${icon} Aura: ${state.toUpperCase()} (${percent}%)`;
+	myStatusBarItem.tooltip = `AI Confidence: ${percent}%`;
+}
+
+async function sendFeedback(trueState: string) {
+	// Neuroplasticity: Send correction to the brain
+	// You would need to add a /feedback/ endpoint to your FastAPI service to handle this
+	// For now, we just show a message.
+	vscode.window.showInformationMessage(`🧠 Aura is learning that you are: ${trueState}`);
+}
+
+export function deactivate() {
+	if (intervalId) clearInterval(intervalId);
+}
