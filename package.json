@@ -1,0 +1,12 @@
+{
+    "contributes": {
+        "statusbar/item": [
+            {
+                "id": "aura.predictionStatus",
+                "name": "Aura Prediction Status",
+                "alignment": "right",
+                "priority": 100
+            }
+        ]
+    }
+}
