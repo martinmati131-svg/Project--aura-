@@ -1,5 +1,14 @@
 "activationEvents": [
     "*"
+"contributes": {
+    "commands": [
+        {
+            "command": "aura.giveFeedback",
+            "title": "Aura: Correct My State (Neuroplasticity)"
+        }
+    ]
+},
+
 ],
 
 {
