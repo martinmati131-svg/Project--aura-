@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Compiled JavaScript Output
+out/
+
+# Extension Bundled Artifacts
+dist/
+*.vsix
+.vscode-test/
+
+# VS Code Cache
+.vscode-test-web/
