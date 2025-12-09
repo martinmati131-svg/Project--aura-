@@ -1,0 +1,64 @@
+import cv2
+import os
+import time
+
+# Configuration
+DATASET_PATH = "vision_dataset"
+CLASSES = ["focused", "distracted", "absent"]
+
+def create_folders():
+    for label in CLASSES:
+        path = os.path.join(DATASET_PATH, label)
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+def collect_data():
+    create_folders()
+    cap = cv2.VideoCapture(0) # 0 is usually the default webcam
+
+    if not cap.isOpened():
+        print("Cannot open camera")
+        return
+
+    print("--- Vision Data Collector ---")
+    print("Press 'f' to save a FOCUSED image")
+    print("Press 'd' to save a DISTRACTED image")
+    print("Press 'a' to save an ABSENT image")
+    print("Press 'q' to quit")
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame")
+            break
+
+        # Resize to match your CNN input (e.g., 64x64 or 128x128)
+        # This makes training faster and files smaller
+        frame_resized = cv2.resize(frame, (64, 64))
+
+        # Show the current view
+        cv2.imshow('Aura Vision Collector', frame)
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord('q'):
+            break
+        elif key in [ord('f'), ord('d'), ord('a')]:
+            timestamp = int(time.time() * 1000)
+            
+            if key == ord('f'):
+                label = "focused"
+            elif key == ord('d'):
+                label = "distracted"
+            elif key == ord('a'):
+                label = "absent"
+            
+            filename = os.path.join(DATASET_PATH, label, f"{timestamp}.jpg")
+            cv2.imwrite(filename, frame_resized)
+            print(f"📸 Saved to {label}/")
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    collect_data()
