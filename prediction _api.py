@@ -211,3 +211,33 @@ async def predict_state(data: ActivityInput):
         "security_risk": security_risk, 
         "security_alerts": security_alerts
     }
+# prediction_api.py (Add new import at the top)
+import hashlib
+
+# ... (New Pydantic model for receiving a raw user ID from the client) ...
+
+class AuthInput(BaseModel):
+    employee_id: str # e.g., "JDOE123"
+
+# --- NEW: Hashing Function ---
+def hash_user_id(employee_id: str) -> str:
+    """Creates a privacy-preserving hash of the employee ID."""
+    # Salt the hash to prevent dictionary attacks using a fixed, known string
+    SALT = "AuraDigitalTwinV1" 
+    hasher = hashlib.sha256()
+    hasher.update((employee_id + SALT).encode('utf-8'))
+    return hasher.hexdigest()
+
+# ... (Add a new /register endpoint for the client to send its ID once) ...
+
+@app.post("/register_user/")
+async def register_user(data: AuthInput):
+    """Placeholder for the client to register and get its anonymized ID."""
+    anonymized_id = hash_user_id(data.employee_id)
+    # In a real system, the client saves this hash and uses it for all future communications.
+    return {"anonymized_id": anonymized_id, "status": "success"}
+
+# RETHINKING THE LOGGING ENDPOINT:
+# The /log_insight/ endpoint (from step 1) must now accept the hash, not the PII.
+# (The implementation in the previous step already used 'user_hash' which aligns with this PPD.)
+
