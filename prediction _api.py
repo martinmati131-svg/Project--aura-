@@ -325,3 +325,8 @@ if security_risk == "CRITICAL":
 
 return {"security_risk": security_risk, "security_alerts": security_alerts}
 
+def hash_user_id(employee_id: str) -> str:
+    SALT = "AuraDigitalTwinV1-Gov" 
+    hasher = hashlib.sha256()
+    hasher.update((employee_id + SALT).encode('utf-8')) 
+    return hasher.hexdigest()
