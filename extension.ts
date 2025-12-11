@@ -132,3 +132,28 @@ async function fetchPrediction() {
     );
 }
 
+// extension.ts (Example Registration Function)
+
+const EMPLOYEE_ID = "TEST_USER_AURA_101"; // Placeholder for the real local ID
+
+async function registerAuraUser() {
+    try {
+        const response = await fetch('http://localhost:8000/register_user/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_id: EMPLOYEE_ID })
+        });
+        
+        const data = await response.json();
+        const anonymizedId = data.anonymized_id;
+        
+        // CRITICAL STEP: The client saves the HASH, not the raw ID.
+        // This hash is then used for ALL subsequent calls (like /log_insight/)
+        // in place of the raw ID.
+        vscode.workspace.getConfiguration().update('aura.anonymizedId', anonymizedId, true);
+        
+        console.log(`User registered with safe ID: ${anonymizedId}`);
+    } catch (error) {
+        console.error("Aura Registration Failed:", error);
+    }
+}
