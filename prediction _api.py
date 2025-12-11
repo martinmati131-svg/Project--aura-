@@ -352,4 +352,59 @@ async def register_user(data: AuthInput):
     
     # Return the secure hash to the client for future use
     return {"anonymized_id": anonymized_id, "status": "success"}
+# prediction_api.py (Add this new function)
+
+def generate_session_summary(recent_context: str, last_activity: str) -> str:
+    """
+    Simulates calling a Generative AI model to summarize the user's past work.
+    
+    In a real system, this prompt would be sent to an LLM:
+    "You are a productivity coach. Summarize the user's last focused session 
+    based on the following context and last file worked on. Be encouraging."
+    """
+    if not recent_context:
+        return "You were away for a while! Let's get started on those power dreams."
+
+    # Use a creative prompt that integrates the Vector DB context
+    summary_prompt = (
+        f"Aura has analyzed your recent work context. Your mind was last focused on: "
+        f"{recent_context.split(' | ')[0]}. " 
+        f"You were primarily editing the file: '{last_activity}'. "
+        f"Recommendation: Review your last commit message or the file's top section to quickly regain flow."
+    )
+    
+    # In a real environment, the LLM would turn this prompt into a smooth paragraph.
+    return summary_prompt
+
+# --- Modify the /predict_state/ endpoint to include the summary function ---
+
+@app.post("/predict_state/")
+async def predict_state(data: ActivityInput):
+    # ... (Sentinel Check and Prediction steps remain the same) ...
+
+    predicted_state = model.predict(full_attention_vector.reshape(1, -1))[0]
+    
+    # --- PROACTIVE INTERVENTION LOGIC ---
+    proactive_summary = ""
+    # Only generate a summary if the user has been predicted "Absent" (returning to work)
+    # AND if the previous state was "Focused"
+    if latest_visual_state == 'focused' and predicted_state == 'focused': # Checking for active return to work
+        
+        # Use a simplified check to see if the user was recently inactive
+        if data.key_count < 5 and data.mouse_distance < 10: 
+            # If input is low but user is now visually present, they likely just sat down.
+            # Generate the summary to bridge the context gap.
+            proactive_summary = generate_session_summary(
+                context_str, # Context retrieved from the Vector DB
+                data.active_app # The file they are currently in
+            )
+
+    return {
+        "predicted_state": predicted_state,
+        "confidence": round(float(confidence), 2),
+        "visual_sense": latest_visual_state,
+        "security_risk": security_risk,
+        "proactive_summary": proactive_summary # <-- NEW FIELD
+    }
+
 
