@@ -317,3 +317,11 @@ model.partial_fit(
     true_label_encoded,                   # Y (The correct state)
     classes=np.arange(len(encoder.classes_))
 )
+# Executed inside the /predict_state/ endpoint
+security_risk, security_alerts = check_security_risk(latest_visual_state, data.key_count, data.mouse_distance)
+
+if security_risk == "CRITICAL":
+    lock_workstation() # Calls ctypes.windll.user32.LockWorkStation() on Windows
+
+return {"security_risk": security_risk, "security_alerts": security_alerts}
+
