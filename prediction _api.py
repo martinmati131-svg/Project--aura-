@@ -73,3 +73,28 @@ async def predict_state(data: ActivityInput):
         "security_risk": security_risk, 
         "security_alerts": security_alerts
     }
+# prediction_api.py (New Pydantic model at the top)
+class InsightLog(BaseModel):
+    user_hash: str # Anonymized user identifier (e.g., hash of employee ID)
+    focus_minutes: int
+    distracted_minutes: int
+    security_alerts: int
+    
+# ... (Inside the FastAPI app instance) ...
+
+@app.post("/log_insight/")
+async def log_insight(data: InsightLog):
+    """
+    Receives hourly insights from a remote Aura Agent. 
+    This is where we'd insert into a central MongoDB/PostgreSQL database.
+    """
+    # NOTE: In the prototype, we just print and save to a temporary log
+    # In a real enterprise system, this connects to the central DB
+    insight = (
+        f"{datetime.now().isoformat()}, {data.user_hash}, "
+        f"{data.focus_minutes}, {data.distracted_minutes}, {data.security_alerts}\n"
+    )
+    with open("central_insight_log.csv", "a") as f:
+        f.write(insight)
+        
+    return {"status": "success", "message": "Insight logged."}
