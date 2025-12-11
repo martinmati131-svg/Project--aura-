@@ -40,3 +40,10 @@ Register-ScheduledTask -TaskName $TaskName `
     -Action $TaskAction `
     -Trigger $TaskTrigger `
     -Description "Starts the Aura Digital Twin Background Monitoring Service."
+# --- 5. VERIFICATION AND CLEANUP ---
+Write-Host "5. Verification and Cleanup..." -ForegroundColor Green
+
+# Start the service immediately after installation
+Start-ScheduledTask -TaskName $TaskName
+
+Write-Host "Deployment Complete! Aura Digital Twin is operational and running in the background." -ForegroundColor Yellow
