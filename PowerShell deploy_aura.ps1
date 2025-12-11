@@ -28,3 +28,15 @@ $VSIXFilePath = "C:\DeploymentShare\aura-digital-twin-0.0.1.vsix" # Path to your
 
 # This command installs the extension silently for the current user
 & "$VSCodeInstallPath" --install-extension "$VSIXFilePath" --silent
+# --- 4. CREATE PERSISTENT SERVICE/TASK (Recommended: Scheduled Task) ---
+Write-Host "4. Ensuring Persistent Autostart..." -ForegroundColor Green
+
+# Create a Scheduled Task to run the EXE on user logon and repeat on failure
+$TaskName = "AuraDigitalTwinService"
+$TaskAction = New-ScheduledTaskAction -Execute $AuraExePath
+$TaskTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+
+Register-ScheduledTask -TaskName $TaskName `
+    -Action $TaskAction `
+    -Trigger $TaskTrigger `
+    -Description "Starts the Aura Digital Twin Background Monitoring Service."
