@@ -309,4 +309,11 @@ attention_vector = transformer_extractor.encode_text(full_input_text)
 # Prediction: X is the attention vector, y is the predicted state
 predicted_state = model.predict(attention_vector.reshape(1, -1))[0]
 
-
+# 
+# Executed via the /feedback_update/ endpoint
+true_label_encoded = encoder.transform([data.true_state])
+model.partial_fit(
+    latest_activity_vector.reshape(1, -1), # X (The vector that caused the error)
+    true_label_encoded,                   # Y (The correct state)
+    classes=np.arange(len(encoder.classes_))
+)
