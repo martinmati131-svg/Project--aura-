@@ -157,3 +157,31 @@ async function registerAuraUser() {
         console.error("Aura Registration Failed:", error);
     }
 }
+// extension.ts
+
+// ... (Inside the existing fetchPrediction function) ...
+
+async function fetchPrediction() {
+    // ... (fetch logic) ...
+    const data: any = await response.json();
+    
+    // --- NEW PROACTIVE INTERVENTION CHECK ---
+    if (data.proactive_summary && data.proactive_summary.length > 0) {
+        // Trigger the personalized coaching notification
+        vscode.window.showInformationMessage(
+            '🧠 Aura Flow Coach: Regaining Context!',
+            { modal: false }, // Don't block the user
+            data.proactive_summary // Display the LLM-generated summary
+        );
+    }
+
+    // Call the updated status bar updater (you'll need to update it to ignore the summary field)
+    updateStatusBar(
+        data.predicted_state, 
+        data.confidence, 
+        data.security_risk, 
+        data.security_alerts
+    );
+}
+
+// ... (Ensure updateStatusBar is updated to handle the new response object structure)
