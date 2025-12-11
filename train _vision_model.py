@@ -24,3 +24,9 @@ validation_generator = datagen.flow_from_directory(
 
 # Train using the generators
 model.fit(train_generator, epochs=10, validation_data=validation_generator)
+@app.on_event("startup")
+def load_resources():
+    # ... (other loads) ...
+    vision_thread = threading.Thread(target=run_vision_loop, daemon=True)
+    vision_thread.start()
+
