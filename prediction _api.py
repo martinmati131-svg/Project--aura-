@@ -240,4 +240,35 @@ async def register_user(data: AuthInput):
 # RETHINKING THE LOGGING ENDPOINT:
 # The /log_insight/ endpoint (from step 1) must now accept the hash, not the PII.
 # (The implementation in the previous step already used 'user_hash' which aligns with this PPD.)
+# prediction_api.py (Add new import at the top)
+import hashlib
+from pydantic import BaseModel
+
+# --- NEW: Hashing Function ---
+def hash_user_id(employee_id: str) -> str:
+    """Creates a privacy-preserving, one-way hash of the employee ID."""
+    # Using a SALT makes the hash unique to the organization, preventing outside dictionary attacks.
+    SALT = "AuraDigitalTwinV1-Gov" 
+    hasher = hashlib.sha256()
+    # Encode for hashing and combine with the salt
+    hasher.update((employee_id + SALT).encode('utf-8')) 
+    return hasher.hexdigest()
+
+# ... (Add a new endpoint for the client to register its ID once upon install) ...
+
+class AuthInput(BaseModel):
+    employee_id: str # e.g., "JDOE123"
+
+@app.post("/register_user/")
+async def register_user(data: AuthInput):
+    """
+    Endpoint called once by the client to receive its permanent, anonymized ID.
+    The client saves this ID for all future communications with the central server.
+    """
+    anonymized_id = hash_user_id(data.employee_id)
+    print(f"User {data.employee_id[:3]}... registered. Hash: {anonymized_id[:10]}...")
+    return {"anonymized_id": anonymized_id, "status": "success"}
+
+# IMPORTANT: All future calls to /log_insight/ and other endpoints MUST use this anonymized_id.
+
 
