@@ -83,3 +83,52 @@ async function sendFeedback(trueState: string) {
 export function deactivate() {
 	if (intervalId) clearInterval(intervalId);
 }
+// extension.ts
+
+function updateStatusBar(state: string, confidence: number, risk: string, alerts: string[]) {
+    
+    // 🚨 PRIORITY 1: SECURITY ALERT
+    if (risk === 'CRITICAL') {
+        myStatusBarItem.text = "$(alert) Aura: SECURITY BREACH";
+        myStatusBarItem.color = "#FF0000"; // Red text
+        myStatusBarItem.tooltip = `⚠️ ALERTS:\n${alerts.join('\n')}`;
+        myStatusBarItem.show();
+        
+        // Optional: Pop up a warning message box
+        vscode.window.showErrorMessage(`🚨 SECURITY ALERT: ${alerts[0]}`);
+        return;
+    }
+
+    // ⚠️ PRIORITY 2: SUSPICIOUS
+    if (risk === 'medium') {
+        myStatusBarItem.color = "#FFA500"; // Orange text
+    } else {
+        myStatusBarItem.color = undefined; // Default color
+    }
+
+    // NORMAL OPERATION
+    let icon = "$(circle-large-outline)";
+    if (state === 'focused') icon = "$(rocket)";
+    if (state === 'distracted') icon = "$(bell)";
+    if (state === 'collaborating') icon = "$(organization)";
+
+    const percent = Math.round(confidence * 100);
+    myStatusBarItem.text = `${icon} Aura: ${state.toUpperCase()} (${percent}%)`;
+    myStatusBarItem.tooltip = `Risk Level: ${risk}\nVision: ${alerts.length > 0 ? alerts[0] : 'Normal'}`;
+    myStatusBarItem.show();
+}
+
+// Update the fetchPrediction function to pass the new fields
+async function fetchPrediction() {
+    // ... (fetch logic) ...
+    const data: any = await response.json();
+    
+    // Pass new security fields to the UI updater
+    updateStatusBar(
+        data.predicted_state, 
+        data.confidence, 
+        data.security_risk, 
+        data.security_alerts
+    );
+}
+
