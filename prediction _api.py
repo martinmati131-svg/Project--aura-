@@ -98,3 +98,44 @@ async def log_insight(data: InsightLog):
         f.write(insight)
         
     return {"status": "success", "message": "Insight logged."}
+from collections import defaultdict
+import csv
+
+@app.get("/get_team_report/")
+async def get_team_report(days: int = 7):
+    """
+    Retrieves and aggregates data for the past 'days' for the management dashboard.
+    """
+    
+    # 1. Simulate reading the Central Database (our CSV log)
+    team_data = defaultdict(lambda: {'focus': 0, 'distracted': 0, 'alerts': 0})
+    
+    # In a production environment, this would be an optimized DB query
+    try:
+        with open("central_insight_log.csv", "r") as f:
+            reader = csv.reader(f)
+            # Assuming format: [timestamp, user_hash, focus_minutes, distracted_minutes, security_alerts]
+            for row in reader:
+                if len(row) < 5: continue
+                # We aggregate by user_hash and sum the metrics
+                user = row[1].strip()
+                team_data[user]['focus'] += int(row[2].strip())
+                team_data[user]['distracted'] += int(row[3].strip())
+                team_data[user]['alerts'] += int(row[4].strip())
+    except FileNotFoundError:
+        return {"error": "No central insight data found."}
+
+    # 2. Format the output for the dashboard
+    report = []
+    for user_hash, metrics in team_data.items():
+        total_time = metrics['focus'] + metrics['distracted']
+        focus_percentage = (metrics['focus'] / total_time) * 100 if total_time > 0 else 0
+        
+        report.append({
+            "user_id_anonymized": user_hash,
+            "total_focus_minutes": metrics['focus'],
+            "focus_percentage": round(focus_percentage, 1),
+            "security_alerts_total": metrics['alerts']
+        })
+
+    return {"report_period_days": days, "team_metrics": report}
