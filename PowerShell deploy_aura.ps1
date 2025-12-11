@@ -20,3 +20,11 @@ New-NetFirewallRule -DisplayName "Aura Digital Twin Local API" `
     -Protocol TCP `
     -LocalPort 8000 `
     -Profile Any
+# --- 3. INSTALL VS CODE EXTENSION ---
+Write-Host "3. Installing VS Code Client Extension..." -ForegroundColor Green
+
+$VSCodeInstallPath = "C:\Program Files\Microsoft VS Code\bin\code.cmd"
+$VSIXFilePath = "C:\DeploymentShare\aura-digital-twin-0.0.1.vsix" # Path to your VSIX installer
+
+# This command installs the extension silently for the current user
+& "$VSCodeInstallPath" --install-extension "$VSIXFilePath" --silent
