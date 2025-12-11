@@ -9,3 +9,14 @@ $AuraExePath = "$AuraInstallDir\Aura_Brain.exe"
 
 If (-not (Test-Path $AuraInstallDir)) { New-Item -Path $AuraInstallDir -Type Directory }
 Invoke-WebRequest -Uri $AuraExeUrl -OutFile $AuraExePath
+# --- 2. CONFIGURE FIREWALL ---
+Write-Host "2. Configuring Firewall Rule for Local Access..." -ForegroundColor Green
+
+# Allows the Aura Agent to communicate with the local Aura Brain on Port 8000
+New-NetFirewallRule -DisplayName "Aura Digital Twin Local API" `
+    -Direction Inbound `
+    -Program $AuraExePath `
+    -Action Allow `
+    -Protocol TCP `
+    -LocalPort 8000 `
+    -Profile Any
