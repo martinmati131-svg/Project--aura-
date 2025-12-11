@@ -14,3 +14,62 @@ pyinstaller ^
 --hidden-import "tokenizers" ^
 --collect-all "chromadb" ^
 prediction_api.py
+# prediction_api.py
+
+# ... (Previous imports and globals) ...
+
+# --- NEW: Sentinel Security Logic ---
+def check_security_risk(visual_state, key_count, mouse_distance):
+    """
+    Gov-Grade Security Logic: Detects physical vs digital anomalies.
+    """
+    alerts = []
+    risk_level = "low"
+
+    # 1. THE GHOST PROTOCOL (Critical)
+    # Camera sees nobody, but keys are typing.
+    if visual_state == 'absent' and (key_count > 10 or mouse_distance > 50):
+        alerts.append("GHOST_USER_DETECTED: Active input from empty station.")
+        risk_level = "CRITICAL"
+
+    # 2. THE BLIND TYPIST (Suspicious)
+    # User is looking away (phone/person) but typing heavily.
+    # Could be copying data from a secondary unauthorized device.
+    elif visual_state == 'distracted' and key_count > 100:
+        alerts.append("SUSPICIOUS_INPUT: High activity while distracted.")
+        risk_level = "medium"
+
+    return risk_level, alerts
+
+# ... (Inside @app.post("/predict_state/")) ...
+
+@app.post("/predict_state/")
+async def predict_state(data: ActivityInput):
+    # ... (Model check code) ...
+    
+    # --- 1. RUN SENTINEL CHECK FIRST ---
+    # We use the global latest_visual_state from the background thread
+    security_risk, security_alerts = check_security_risk(
+        latest_visual_state, 
+        data.key_count, 
+        data.mouse_distance
+    )
+
+    # --- 2. GATHER CONTEXT (Modified to include Security Alert) ---
+    current_activity_desc = (
+        f"App: {data.active_app}. Keys: {data.key_count}. Mouse: {data.mouse_distance}. "
+        f"Visual: '{latest_visual_state}'. "
+        f"Security Level: {security_risk.upper()}."  # <--- Context for the Brain
+    )
+    
+    # ... (Memory Recall and Transformer Encoding steps remain the same) ...
+    
+    # --- 3. RETURN ENHANCED RESPONSE ---
+    return {
+        "predicted_state": predicted_state,
+        "confidence": round(float(confidence), 2),
+        "visual_sense": latest_visual_state,
+        # NEW SECURITY FIELDS
+        "security_risk": security_risk, 
+        "security_alerts": security_alerts
+    }
