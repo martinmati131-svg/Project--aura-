@@ -302,4 +302,11 @@ async def register_user(data: AuthInput):
 
 # IMPORTANT: All future calls to /log_insight/ and other endpoints MUST use this anonymized_id.
 
+# Full Attention Vector Input to the SGD Classifier
+full_input_text = f"Current State: {current_activity_desc}\nPast Memories: {context_str}"
+attention_vector = transformer_extractor.encode_text(full_input_text)
+
+# Prediction: X is the attention vector, y is the predicted state
+predicted_state = model.predict(attention_vector.reshape(1, -1))[0]
+
 
