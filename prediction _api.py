@@ -139,3 +139,75 @@ async def get_team_report(days: int = 7):
         })
 
     return {"report_period_days": days, "team_metrics": report}
+# prediction_api.py
+
+import platform
+import subprocess
+import ctypes # Necessary for Windows lock function
+
+# --- NEW: OS Control Function ---
+def lock_workstation():
+    """
+    Executes the command to lock the workstation based on the OS.
+    """
+    os_name = platform.system()
+    
+    try:
+        if os_name == "Windows":
+            # Direct call to the Windows API function
+            ctypes.windll.user32.LockWorkStation()
+            print("🛑 CRITICAL LOCKDOWN: Windows workstation locked.")
+        
+        elif os_name == "Darwin": # macOS
+            # Command to invoke the screen saver/lock screen
+            subprocess.run(["/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession", "-suspend"])
+            print("🛑 CRITICAL LOCKDOWN: macOS workstation locked.")
+            
+        elif os_name == "Linux":
+            # Common commands for Linux desktop environments (requires a screen locker)
+            # You might need to check which locker is installed (gnome-screensaver, loginctl, etc.)
+            subprocess.run(["loginctl", "lock-session"]) 
+            # Fallback for X environments
+            # subprocess.run(["xdg-screensaver", "lock"])
+            print("🛑 CRITICAL LOCKDOWN: Linux workstation lock initiated.")
+            
+        else:
+            print(f"🛑 WARNING: Lock command unknown for OS: {os_name}")
+            return False
+            
+        return True
+
+    except Exception as e:
+        print(f"🛑 ERROR during lockdown attempt: {e}")
+        return False
+
+# ... (Inside @app.post("/predict_state/")) ...
+
+@app.post("/predict_state/")
+async def predict_state(data: ActivityInput):
+    # ... (Sentinel Check and Context Gathering remain the same) ...
+    
+    security_risk, security_alerts = check_security_risk(
+        latest_visual_state, 
+        data.key_count, 
+        data.mouse_distance
+    )
+    
+    # --- ZERO TRUST ENFORCEMENT POINT ---
+    if security_risk == "CRITICAL":
+        lock_successful = lock_workstation()
+        
+        # If lockdown fails, still report the alert
+        if not lock_successful:
+            security_alerts.append("ERROR: Automatic lockdown failed.")
+
+
+    # ... (Rest of the original logic to return the response) ...
+    
+    return {
+        "predicted_state": predicted_state,
+        "confidence": round(float(confidence), 2),
+        "visual_sense": latest_visual_state,
+        "security_risk": security_risk, 
+        "security_alerts": security_alerts
+    }
