@@ -47,3 +47,8 @@ Write-Host "5. Verification and Cleanup..." -ForegroundColor Green
 Start-ScheduledTask -TaskName $TaskName
 
 Write-Host "Deployment Complete! Aura Digital Twin is operational and running in the background." -ForegroundColor Yellow
+# Creates a resilient, auto-restarting service on user logon
+$TaskAction = New-ScheduledTaskAction -Execute $AuraExePath
+$TaskTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+
+Register-ScheduledTask -TaskName "AuraDigitalTwinService" -Action $TaskAction -Trigger $TaskTrigger
