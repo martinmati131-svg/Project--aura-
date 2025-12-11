@@ -330,3 +330,26 @@ def hash_user_id(employee_id: str) -> str:
     hasher = hashlib.sha256()
     hasher.update((employee_id + SALT).encode('utf-8')) 
     return hasher.hexdigest()
+
+# prediction_api.py (The Logic to generate the anonymized_id)
+
+import hashlib
+from pydantic import BaseModel
+
+# ... (hash_user_id function definition) ...
+
+class AuthInput(BaseModel):
+    employee_id: str 
+
+@app.post("/register_user/")
+async def register_user(data: AuthInput):
+    """
+    This endpoint executes your code logic:
+    anonymized_id = hash_user_id("TEST_USER_AURA_101") 
+    """
+    # The system then generates the safe, anonymized key:
+    anonymized_id = hash_user_id(data.employee_id)
+    
+    # Return the secure hash to the client for future use
+    return {"anonymized_id": anonymized_id, "status": "success"}
+
