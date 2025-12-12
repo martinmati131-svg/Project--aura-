@@ -562,3 +562,76 @@ async def check_location_push(data: LocationCheckInput):
         }
 
     return {"send_push": False, "message": "Work location reached, but no intention pending."}
+# prediction_api.py (Add new endpoint)
+import csv
+from collections import defaultdict
+from datetime import datetime, timedelta
+
+@app.get("/get_wellness_report/")
+async def get_wellness_report(user_hash: str, days: int = 7):
+    """
+    Calculates the Burnout KPI for a specific user over the last N days.
+    """
+    
+    # 1. AGGREGATE DESKTOP (Focus Time)
+    focus_data = defaultdict(lambda: 0)
+    # [timestamp, user_hash, focus_minutes, distracted_minutes, security_alerts]
+    try:
+        with open("central_insight_log.csv", "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) < 3 or row[1].strip() != user_hash: continue
+                focus_data[user_hash] += int(row[2].strip()) # Total focus minutes
+    except FileNotFoundError: pass
+
+    # 2. AGGREGATE MOBILE (Wellness Data)
+    wellness_data = defaultdict(lambda: {'sleep': 0, 'hr': 0, 'count': 0})
+    # [timestamp, user_hash, Commute, Sleep, HR, ScreenTime]
+    try:
+        with open("mobile_context_log.csv", "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) < 5 or row[1].strip() != user_hash: continue
+                
+                sleep = float(row[3].split(':')[1]) if row[3].split(':')[1].replace('.', '', 1).isdigit() else 0
+                hr = int(row[4].split(':')[1]) if row[4].split(':')[1].isdigit() else 0
+                
+                if sleep > 0 and hr > 0:
+                    wellness_data[user_hash]['sleep'] += sleep
+                    wellness_data[user_hash]['hr'] += hr
+                    wellness_data[user_hash]['count'] += 1
+    except FileNotFoundError: pass
+
+
+    # 3. CALCULATE THE BURN OUT SCORE (The KPI)
+    total_focus_minutes = focus_data[user_hash]
+    
+    if wellness_data[user_hash]['count'] == 0:
+         return {"error": "Insufficient wellness data to calculate KPI."}
+        
+    avg_sleep = wellness_data[user_hash]['sleep'] / wellness_data[user_hash]['count']
+    avg_hr = wellness_data[user_hash]['hr'] / wellness_data[user_hash]['count']
+    
+    # Assumptions for 7-day period: 8 hours/day (56 hours) available work time.
+    total_available_minutes = days * 8 * 60 
+
+    # --- Burnout Score Calculation ---
+    # Focus Ratio (Risk Factor): How much time was spent focused vs. available time
+    focus_ratio = total_focus_minutes / total_available_minutes 
+
+    # Recovery Ratio (Mitigation Factor): Sleep Quality / Stress (Inverse HR)
+    recovery_ratio = avg_sleep / avg_hr
+
+    # Burnout Score: (Focus/Risk) - (Recovery/Mitigation)
+    burnout_score = focus_ratio - recovery_ratio 
+    
+    # Scale and interpret the score (e.g., 0.05 is High Risk)
+    
+    return {
+        "user_hash": user_hash,
+        "total_focus_minutes": total_focus_minutes,
+        "average_sleep_hours": round(avg_sleep, 2),
+        "average_resting_hr": round(avg_hr, 1),
+        "burnout_score_raw": round(burnout_score, 4),
+        "risk_level": "HIGH" if burnout_score > 0.05 else "LOW" # Simple threshold
+    }
