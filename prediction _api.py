@@ -1,3 +1,25 @@
+# prediction_api.py (New Mobile Data Model)
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class MobileInsightLog(BaseModel):
+    # Core Identity (Secured via PPD)
+    user_hash: str = Field(..., description="Anonymized ID of the user (e.g., SHA256 hash).")
+
+    # New Location/Context Senses
+    is_commute: bool = Field(False, description="True if movement patterns suggest a commute.")
+    is_home_base: bool = Field(False, description="True if user is at their primary home location.")
+    
+    # New Wellness Senses
+    sleep_duration_hours: Optional[float] = Field(None, description="Total hours of sleep tracked.")
+    resting_hr_bpm: Optional[int] = Field(None, description="Average resting heart rate.")
+    
+    # Simple Mobile Activity
+    screen_time_minutes: int = Field(0, description="Total screen-on time since last sync.")
+
+    # Status update for security layer
+    is_mobile_active: bool = Field(False, description="True if the mobile app is open/active.")
+
 pyinstaller ^
 --name "AuraService" ^
 --onefile ^
