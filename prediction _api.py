@@ -512,3 +512,53 @@ current_activity_desc = (
 # 3. Transformer creates the Attention Vector based on the Intention:
 full_input_text = f"Current State: {current_activity_desc}\nPast Memories: {context_str}"
 attention_vector = transformer_extractor.encode_text(full_input_text)
+# prediction_api.py (Add new Pydantic model)
+class LocationCheckInput(BaseModel):
+    user_hash: str = Field(..., description="Anonymized ID of the user.")
+    current_latitude: float
+    current_longitude: float
+    is_work_location: bool = Field(False, description="Flag set by mobile app's geo-fence.")
+    
+# --- New Location Check Endpoint ---
+
+@app.post("/check_location_push/")
+async def check_location_push(data: LocationCheckInput):
+    """
+    Called by the Mobile Sense Agent to check if a Proactive Push (Intention reminder) 
+    should be sent based on location and previous state.
+    """
+    
+    # 1. CRITICAL CONTEXT CHECK (Was the user just traveling/away?)
+    # We assume the push should only occur when they transition *into* work mode.
+    if not data.is_work_location:
+        return {"send_push": False, "message": "User is not at a designated work location."}
+
+    # 2. RETRIEVE LATEST INTENTION (From the log/cache created earlier)
+    # This simulates fetching the user's previously set 'powerdream' goal.
+    try:
+        # Placeholder function to retrieve the last goal
+        last_intention = get_last_intention_from_log(data.user_hash) 
+    except Exception:
+        return {"send_push": False, "message": "No active intention found."}
+
+
+    # 3. INTERVENTION LOGIC (Push Rule)
+    # Rule: If the user just arrived at a work location AND has a pending intention.
+    if last_intention and data.is_work_location:
+        
+        push_message = (
+            f"🧠 Welcome! Time to tackle your Power Dream. "
+            f"Your focus goal is: '{last_intention}'"
+        )
+        
+        # In a real system, you would set a flag in the central DB 
+        # to mark the intention as "prompted" to avoid spamming the user.
+        
+        return {
+            "send_push": True, 
+            "message": "Work location arrival detected.",
+            "push_title": "Aura Flow Coach: Goal Reminder",
+            "push_body": push_message
+        }
+
+    return {"send_push": False, "message": "Work location reached, but no intention pending."}
