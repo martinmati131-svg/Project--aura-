@@ -495,3 +495,20 @@ async def set_intention(data: IntentionInput):
         return {"status": "error", "message": "Failed to set intention."}
 
     return {"status": "success", "message": "Intention set successfully."}
+# prediction_api.py (Inside @app.post("/predict_state/") function)
+
+# 1. RETRIEVE CURRENT INTENTION (Simulated lookup)
+# In production, you would query the fast intention storage here.
+# For the prototype, assume we have a way to fetch the last intention string.
+current_intention = get_last_intention_from_log(data.user_hash) # Function to read the last entry
+
+# 2. ENHANCE THE ATTENTION VECTOR INPUT
+current_activity_desc = (
+    f"App: {data.active_app}. Keys: {data.key_count}. Mouse: {data.mouse_distance}. "
+    f"Visual: '{latest_visual_state}'. "
+    f"USER INTENTION: '{current_intention}'" # <--- NEW INPUT
+)
+
+# 3. Transformer creates the Attention Vector based on the Intention:
+full_input_text = f"Current State: {current_activity_desc}\nPast Memories: {context_str}"
+attention_vector = transformer_extractor.encode_text(full_input_text)
