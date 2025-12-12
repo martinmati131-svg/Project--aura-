@@ -461,3 +461,37 @@ async def log_mobile_insight(data: MobileInsightLog):
 
     return {"status": "success", "message": "Mobile context logged successfully."}
 
+# prediction_api.py (New Pydantic model)
+
+class IntentionInput(BaseModel):
+    user_hash: str = Field(..., description="Anonymized ID of the user.")
+    intention_text: str = Field(..., description="The user's declared top goal for the session/day.")
+    
+# --- New Intention Endpoint ---
+
+@app.post("/set_intention/")
+async def set_intention(data: IntentionInput):
+    """
+    Receives and logs the user's top intention (powerdream) for the current session.
+    This intention is used to guide the Prediction Engine and Proactive Coach.
+    """
+    
+    # --- ENTERPRISE LOGGING (Simulated) ---
+    # In a real system, this would be stored in a dedicated, quickly accessible
+    # database (like Redis or a fast-lookup table) mapped to the user_hash.
+    try:
+        log_entry = (
+            f"{datetime.now().isoformat()},"
+            f"{data.user_hash},"
+            f"'{data.intention_text}'\n"
+        )
+        with open("daily_intentions_log.csv", "a", encoding="utf-8") as f:
+            f.write(log_entry)
+            
+        print(f"🎯 INTENTION SET for user {data.user_hash[:6]}: '{data.intention_text[:30]}...'")
+        
+    except Exception as e:
+        print(f"ERROR setting intention: {e}")
+        return {"status": "error", "message": "Failed to set intention."}
+
+    return {"status": "success", "message": "Intention set successfully."}
