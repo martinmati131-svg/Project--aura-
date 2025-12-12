@@ -429,4 +429,35 @@ async def predict_state(data: ActivityInput):
         "proactive_summary": proactive_summary # <-- NEW FIELD
     }
 
+# prediction_api.py (New Mobile Endpoint)
+
+@app.post("/log_mobile_insight/")
+async def log_mobile_insight(data: MobileInsightLog):
+    """
+    Receives periodic, anonymized wellness and context data from the Mobile Sense Agent.
+    This data is used to enrich the centralized predictive models (e.g., Burnout).
+    """
+    
+    # --- ENTERPRISE LOGGING (Simulated) ---
+    # In a real system, this data would go into a dedicated Wellness/Context DB table.
+    try:
+        log_entry = (
+            f"{datetime.now().isoformat()},"
+            f"{data.user_hash},"
+            f"Commute:{data.is_commute},"
+            f"Sleep:{data.sleep_duration_hours or 'N/A'},"
+            f"HR:{data.resting_hr_bpm or 'N/A'},"
+            f"ScreenTime:{data.screen_time_minutes}\n"
+        )
+        with open("mobile_context_log.csv", "a") as f:
+            f.write(log_entry)
+            
+        print(f"📱 MOBILE INSIGHT LOGGED for user {data.user_hash[:6]}: Sleep {data.sleep_duration_hours}h.")
+        
+    except Exception as e:
+        # PII violation or bad data is common on mobile, so log exceptions carefully.
+        print(f"ERROR logging mobile data: {e}")
+        return {"status": "error", "message": "Failed to log data"}
+
+    return {"status": "success", "message": "Mobile context logged successfully."}
 
