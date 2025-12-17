@@ -635,3 +635,38 @@ async def get_wellness_report(user_hash: str, days: int = 7):
         "burnout_score_raw": round(burnout_score, 4),
         "risk_level": "HIGH" if burnout_score > 0.05 else "LOW" # Simple threshold
     }
+# prediction_api.py
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+def send_welcome_email(recipient_email, activation_key):
+    """
+    Sends the automated onboarding email via SendGrid API.
+    """
+    message = Mail(
+        from_email='onboarding@powerdreams.shop',
+        to_emails=recipient_email,
+        subject='Your Aura Digital Twin is Ready 🚀',
+        html_content=f"""
+        <h1>Welcome to the Flow State!</h1>
+        <p>Thank you for your purchase. Your Aura Digital Twin is ready to help you achieve your power dreams.</p>
+        <p><strong>Your Unique Activation Key:</strong> {activation_key}</p>
+        <p><strong>Next Steps:</strong></p>
+        <ul>
+            <li>Download the Installer: <a href='https://powerdreams.shop/download'>Click Here</a></li>
+            <li>Run the 'deploy_aura.ps1' script.</li>
+            <li>Input your activation key when prompted.</li>
+        </ul>
+        <p>Stay focused, <br>The Aura Team</p>
+        """
+    )
+    try:
+        # You would store your API Key in an environment variable for security
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        return True
+    except Exception as e:
+        print(f"Email Error: {e}")
+        return False
+
