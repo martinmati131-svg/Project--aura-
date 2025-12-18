@@ -670,3 +670,27 @@ def send_welcome_email(recipient_email, activation_key):
         print(f"Email Error: {e}")
         return False
 
+# prediction_api.py (Aura Wellness Module)
+
+@app.get("/get_focus_fuel/")
+async def get_focus_fuel(user_hash: str, cognitive_load: str):
+    """
+    Suggests a recipe from the 'my-recipes' library based on the user's current 
+    mental state (High Load, Fatigue, or Pre-Focus).
+    """
+    
+    # Logic: Match recipe tags (from your GitHub repo) to cognitive states
+    if cognitive_load == "HIGH_FATIGUE":
+        # Suggest something light and restorative
+        suggestion = {"recipe": "Salmon & Avocado Bowl", "benefit": "Omega-3s for brain recovery"}
+    elif cognitive_load == "PRE_DEEP_WORK":
+        # Suggest slow-release energy
+        suggestion = {"recipe": "Quinoa Power Salad", "benefit": "Stable glucose for 4-hour focus"}
+    else:
+        suggestion = {"recipe": "Quick Protein Shake", "benefit": "Rapid fuel for short breaks"}
+
+    return {
+        "user_hash": user_hash,
+        "recommendation": suggestion,
+        "source": "https://github.com/martinmati131-svg/my-recipes"
+    }
