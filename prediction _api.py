@@ -694,3 +694,25 @@ async def get_focus_fuel(user_hash: str, cognitive_load: str):
         "recommendation": suggestion,
         "source": "https://github.com/martinmati131-svg/my-recipes"
     }
+import requests
+import base64
+
+def fetch_recipe_from_github(recipe_name):
+    """
+    Connects to martinmati131-svg/my-recipes and retrieves the recipe content.
+    """
+    repo_owner = "martinmati131-svg"
+    repo_name = "my-recipes"
+    path = f"recipes/{recipe_name}.md" # Assuming a folder structure
+    
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{path}"
+    
+    # We use the Sentinel Protocol's secure token management here
+    headers = {"Authorization": f"token {os.environ.get('GITHUB_PAT')}"}
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        content_b64 = response.json()['content']
+        recipe_text = base64.b64decode(content_b64).decode('utf-8')
+        return recipe_text
+    return "Recipe not found. Time for a quick protein shake? 🥤"
