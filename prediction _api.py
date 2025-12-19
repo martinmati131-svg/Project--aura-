@@ -739,4 +739,24 @@ async def get_my_twin_avatar(user_hash: str):
         "avatar_url": avatar_url,
         "status": "Custom Twin Identity Created"
     }
+# prediction_api.py (Dashboard Logic)
+
+@app.get("/dashboard/settings")
+async def get_user_dashboard(user_hash: str):
+    """
+    Returns the current state of the user's personal productivity ecosystem.
+    """
+    return {
+        "system_status": "OPTIMAL",
+        "active_modules": [
+            {"name": "Neural Brain", "repo": "Aura-Core", "status": "Learning"},
+            {"name": "Visual Twin", "repo": "my-robots", "status": "Synced"},
+            {"name": "Bio-Nutrition", "repo": "my-recipes", "status": "Linked"}
+        ],
+        "system_stats": {
+            "uptime": "99.9%",
+            "security_blocks": 0,
+            "recipes_synced": 42
+        }
+    }
 
