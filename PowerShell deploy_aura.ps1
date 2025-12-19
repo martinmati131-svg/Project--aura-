@@ -52,3 +52,11 @@ $TaskAction = New-ScheduledTaskAction -Execute $AuraExePath
 $TaskTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 
 Register-ScheduledTask -TaskName "AuraDigitalTwinService" -Action $TaskAction -Trigger $TaskTrigger
+# Add to deploy_aura.ps1
+$assetPath = "C:\ProgramData\AuraDigitalTwin\assets"
+if (!(Test-Path $assetPath)) { New-Item -ItemType Directory -Path $assetPath }
+
+# Download the "Mood" pack from your GitHub
+Invoke-WebRequest -Uri "https://github.com/martinmati131-svg/my-robots/archive/refs/heads/main.zip" -OutFile "$assetPath\robots.zip"
+Expand-Archive -Path "$assetPath\robots.zip" -DestinationPath $assetPath -Force
+
