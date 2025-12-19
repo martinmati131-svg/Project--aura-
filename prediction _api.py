@@ -716,3 +716,27 @@ def fetch_recipe_from_github(recipe_name):
         recipe_text = base64.b64decode(content_b64).decode('utf-8')
         return recipe_text
     return "Recipe not found. Time for a quick protein shake? 🥤"
+# prediction_api.py (Aura Identity Module)
+
+@app.get("/get_my_twin_avatar/")
+async def get_my_twin_avatar(user_hash: str):
+    """
+    Generates a unique SVG robot avatar by mapping the user's hash
+    to components in the 'my-robots' GitHub repository.
+    """
+    # Seed the randomizer with the user_hash so the avatar is permanent for that user
+    random.seed(user_hash)
+    
+    # Select components from your 'my-robots' SVG library
+    head = random.choice(["square-head.svg", "round-head.svg", "antenna-head.svg"])
+    body = random.choice(["tank-body.svg", "slim-body.svg", "power-core.svg"])
+    
+    # Assemble the final SVG (Simulated)
+    avatar_url = f"https://github.com/martinmati131-svg/my-robots/raw/main/assets/{head}"
+    
+    return {
+        "user_hash": user_hash,
+        "avatar_url": avatar_url,
+        "status": "Custom Twin Identity Created"
+    }
+
