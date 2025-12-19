@@ -782,5 +782,20 @@ async def broadcast_signal(user_hash: str, signal_type: str, payload: dict):
         "payload": payload,
         "status": "Transmitted Successfully"
     }
+# prediction_api.py (Gemini Studio Module)
+
+@app.post("/studio/creative_task")
+async def run_creative_task(prompt: str, task_type: str):
+    """
+    Leverages Gemini-Studio to perform complex creative reasoning
+    or code generation.
+    """
+    # Logic from martinmati131-svg/gemini-studio
+    # Example: Generating a new UI component for my-app
+    if task_type == "CODE_GEN":
+        response = gemini_model.generate_content(f"Develop a React component for: {prompt}")
+        return {"code": response.text, "module": "my-app"}
+    
+    return {"message": "Creative Task Queued", "engine": "Gemini-Studio"}
 
 
