@@ -107,3 +107,19 @@ setInterval(getAuraStatus, 3000);
 // Run both functions once immediately when the page loads
 getAuraStatus();
 getRssFeed();
+// my-app / src / services / AuraService.js
+
+const API_URL = "https://api.powerdreams.shop";
+
+export const getAuraStatus = async (userHash) => {
+    // Fetches the unified system state we defined in 'my-system'
+    const response = await fetch(`${API_URL}/system/status?user_hash=${userHash}`);
+    const data = await response.json();
+    
+    // Updates the App UI with:
+    // 1. The Robot Mood (from my-robots)
+    // 2. The Current Recipe (from my-recipes)
+    // 3. The Sync Status (from my-transmitter)
+    return data;
+};
+
