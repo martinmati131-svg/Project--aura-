@@ -185,3 +185,26 @@ async function fetchPrediction() {
 }
 
 // ... (Ensure updateStatusBar is updated to handle the new response object structure)
+// extension.ts update
+
+function updateStatusBar(focusScore: number, burnoutRisk: boolean) {
+    let statusText: string;
+    let robotIcon: string;
+
+    if (burnoutRisk) {
+        statusText = "Aura: NEEDS RECOVERY";
+        robotIcon = "robot_exhausted.svg"; // From your repo
+    } else if (focusScore > 0.8) {
+        statusText = "Aura: FLOW STATE";
+        robotIcon = "robot_blazing.svg";
+    } else {
+        statusText = "Aura: STANDBY";
+        robotIcon = "robot_idle.svg";
+    }
+
+    // Update the VS Code UI with the specific SVG path
+    myStatusBarItem.text = `${statusText}`;
+    myStatusBarItem.tooltip = `Your Twin is currently in ${statusText} mode.`;
+    myStatusBarItem.show();
+}
+
