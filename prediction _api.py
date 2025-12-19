@@ -759,4 +759,28 @@ async def get_user_dashboard(user_hash: str):
             "recipes_synced": 42
         }
     }
+# prediction_api.py (Transmitter Module)
+
+@app.post("/transmitter/broadcast")
+async def broadcast_signal(user_hash: str, signal_type: str, payload: dict):
+    """
+    Relays signals from the Brain to all connected 'Transmitter' nodes 
+    (Mobile, Desktop, or Smart Home).
+    """
+    # Logic from martinmati131-svg/my-transmitter
+    channel = f"aura_channel_{user_hash}"
+    
+    # Example: If signal is 'DEEP_WORK', tell the phone to go silent
+    if signal_type == "DEEP_WORK":
+        status = "Broadcasting: SILENCE_NOTIFICATIONS"
+    elif signal_type == "RECOVERY_NEEDED":
+        status = "Broadcasting: SUGGEST_RECIPE"
+        
+    return {
+        "channel": channel,
+        "signal": signal_type,
+        "payload": payload,
+        "status": "Transmitted Successfully"
+    }
+
 
