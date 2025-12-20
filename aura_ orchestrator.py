@@ -156,3 +156,26 @@ class AuraMasterControl:
             
         return f"System synced to frequency: {state}"
 
+# aura_orchestrator.py (Bio-Visual Mirroring)
+
+async def update_robot_vitality(self, frequency_data):
+    """
+    Translates raw frequencies from my-wave-receiver into 
+    visual attributes for my-robots.
+    """
+    # 1. Capture the Wave
+    wave_pattern = await self.waves.get_current_rhythm(frequency_data)
+    
+    # 2. Determine Visual State
+    if wave_pattern.is_high_focus():
+        visual_state = {"mood": "Zen", "color": "#00FFCC", "pulse_rate": "slow"}
+    elif wave_pattern.is_stressed():
+        visual_state = {"mood": "Overloaded", "color": "#FF3300", "pulse_rate": "rapid"}
+    else:
+        visual_state = {"mood": "Idle", "color": "#AAAAAA", "pulse_rate": "none"}
+
+    # 3. Apply to the Robot Twin
+    await self.identity.update_avatar_style(user_id="Founder_01", **visual_state)
+    
+    # 4. Notify the Transmitter
+    await self.transmitter.broadcast("ROBOT_SYNC_COMPLETE", visual_state)
