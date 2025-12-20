@@ -86,3 +86,27 @@ class AuraMasterControl:
             
         return analysis
 
+# aura_orchestrator.py (Prototype Test)
+
+async def test_sketch_to_code_pipeline(image_path):
+    print("🚀 Initiating Sketch-to-Code Prototype...")
+    
+    # 1. Feature Detection
+    # my-cnn identifies: [Rectangle: Header, Circle: Avatar, Box: Stats]
+    visual_features = await aura_core.vision.analyze_sketch(image_path)
+    
+    # 2. Code Generation
+    # Gemini Studio turns these shapes into a functional component
+    generated_code = await aura_core.studio.generate_component_from_vision(
+        features=visual_features,
+        framework="React"
+    )
+    
+    # 3. Deployment
+    # Transmitter pushes the code to the Dev environment
+    await aura_core.transmitter.broadcast_update(
+        target="my-app", 
+        payload={"new_component": generated_code}
+    )
+    
+    return "🎨 Prototype Success: UI rendered from sketch."
