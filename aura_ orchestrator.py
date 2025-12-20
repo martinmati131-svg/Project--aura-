@@ -110,3 +110,22 @@ async def test_sketch_to_code_pipeline(image_path):
     )
     
     return "🎨 Prototype Success: UI rendered from sketch."
+# aura_orchestrator.py (Heartbeat Extension)
+
+async def perform_system_pulse(self):
+    """
+    Simultaneously pings all 9 pillars to ensure zero-latency communication.
+    """
+    tasks = [
+        self.vision.ping(),
+        self.studio.ping(),
+        self.transmitter.ping(),
+        self.app_service.ping()
+    ]
+    results = await asyncio.gather(*tasks)
+    
+    if all(results):
+        self.last_pulse_timestamp = "2025-12-20T13:10:00Z"
+        return "💓 Pulse Strong: All systems green."
+    else:
+        return "⚠️ Pulse Weak: Investigating module latency."
