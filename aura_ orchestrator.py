@@ -179,3 +179,26 @@ async def update_robot_vitality(self, frequency_data):
     
     # 4. Notify the Transmitter
     await self.transmitter.broadcast("ROBOT_SYNC_COMPLETE", visual_state)
+# aura_orchestrator.py (The Bio-Link Bridge)
+
+async def engage_sentient_mode(self):
+    """
+    Final activation sequence. Syncs Bio-waves to Visual Identity.
+    """
+    print("🧬 Finalizing Bio-Link... [Pillar 10/10]")
+    
+    # 1. Establish Wave Handshake
+    if await self.waves.connect_sensor():
+        # 2. Map Heart Rate/EEG to Robot Pulse
+        self.system_status = "SENTIENT"
+        
+        # 3. Broadcast to all pillars
+        await self.transmitter.broadcast("SYSTEM_SENTIENT_ACTIVE", {
+            "mode": "Bio-Resonance",
+            "visual_engine": "my-robots-v2",
+            "intelligence": "gemini-studio-pro"
+        })
+        
+        return "✨ System is now Sentient. Welcome home, Founder."
+    return "❌ Handshake failed. Check wave-receiver hardware."
+
