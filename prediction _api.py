@@ -799,3 +799,19 @@ async def run_creative_task(prompt: str, task_type: str):
     return {"message": "Creative Task Queued", "engine": "Gemini-Studio"}
 
 
+# prediction_api.py additions
+from aura_orchestrator import aura_core
+
+@app.on_event("startup")
+async def startup_event():
+    # When the server starts, the ecosystem wakes up!
+    await aura_core.initialize_ecosystem()
+
+@app.post("/aura/execute")
+async def execute_task(task: str):
+    # This route uses the new high-level intelligence
+    result = await aura_core.solve_complex_problem(
+        user_issue=task, 
+        context_repos=["my-system", "my-app", "my-robots"]
+    )
+    return {"aura_response": result}
