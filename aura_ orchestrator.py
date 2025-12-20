@@ -59,3 +59,30 @@ class AuraMasterControl:
 
 # Global Instance for the API to use
 aura_core = AuraMasterControl()
+# aura_orchestrator.py update
+
+class AuraMasterControl:
+    def __init__(self):
+        self.studio = "Gemini_Studio"
+        self.vision = "My_CNN" # New Vision Module
+        self.transmitter = "My_Transmitter"
+
+    async def process_visual_input(self, image_data):
+        """
+        Uses my-cnn to extract features from an image (posture, sketches, etc.)
+        and passes the findings to Gemini Studio.
+        """
+        print("👁️ Aura is 'looking' at the input using my-cnn...")
+        
+        # 1. Feature Extraction (via your CNN)
+        features = await self.vision.extract_features(image_data)
+        
+        # 2. Reasoning (via Gemini Studio)
+        analysis = await self.studio.analyze_image_features(features)
+        
+        # 3. Action (via Transmitter)
+        if "bad_posture" in analysis:
+            await self.transmitter.broadcast("POSTURE_ALERT", "Straighten up, Founder!")
+            
+        return analysis
+
