@@ -129,3 +129,30 @@ async def perform_system_pulse(self):
         return "💓 Pulse Strong: All systems green."
     else:
         return "⚠️ Pulse Weak: Investigating module latency."
+# aura_orchestrator.py (Wave Integration)
+
+class AuraMasterControl:
+    def __init__(self):
+        self.studio = "Gemini_Studio"
+        self.vision = "My_CNN"
+        self.waves = "My_Wave_Receiver" # New Bio-Rhythm Layer
+        self.transmitter = "My_Transmitter"
+
+    async def synchronize_to_user_rhythm(self, wave_data):
+        """
+        Processes incoming wave signals (EEG/HRV) to adjust the entire ecosystem.
+        """
+        print("🌊 Aura is tuning into your bio-waves via my-wave-receiver...")
+        
+        # 1. Analyze Wave Pattern
+        # my-wave-receiver identifies: [Pattern: Deep Alpha, Frequency: 10Hz]
+        state = await self.waves.analyze_frequency(wave_data)
+        
+        if state == "HIGH_STRESS":
+            # 2. Reasoning: Gemini Studio suggests a recovery protocol
+            advice = await self.studio.get_recovery_advice("stress_detected")
+            # 3. Action: Transmitter pushes a 'Calm' skin to my-robots and a recipe to my-app
+            await self.transmitter.broadcast("BIO_SYNC_CALM", advice)
+            
+        return f"System synced to frequency: {state}"
+
