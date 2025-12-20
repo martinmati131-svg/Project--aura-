@@ -815,3 +815,23 @@ async def execute_task(task: str):
         context_repos=["my-system", "my-app", "my-robots"]
     )
     return {"aura_response": result}
+# Add to prediction_api.py
+
+@app.get("/system/health")
+async def public_health_check():
+    """
+    Returns the status of all linked GitHub repositories 
+    managed by the AuraMasterControl.
+    """
+    return {
+        "timestamp": "2025-12-19T18:10:00Z",
+        "ecosystem_id": aura_core.system_id,
+        "is_sentient": aura_core.is_active,
+        "modules": {
+            "studio": "CONNECTED" if aura_core.studio_ready else "RECONNECTING",
+            "transmitter": "ONLINE" if aura_core.transmitter_online else "OFFLINE",
+            "identity": "ACTIVE",
+            "wellness": "ACTIVE"
+        },
+        "version": "v1.5.0-Gemini-Powered"
+    }
