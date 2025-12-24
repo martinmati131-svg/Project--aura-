@@ -306,3 +306,24 @@ async def handle_new_order(order_data: dict):
 
     await aura_core.post_to_aura_channel(alert_message)
     return {"status": "success", "message": "Order processed and broadcasted."}
+import requests
+
+def send_aura_pulse(message):
+    # Use the credentials from your Meta Dashboard
+    url = "https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages"
+    headers = {
+        "Authorization": "Bearer YOUR_PERMANENT_ACCESS_TOKEN",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": "YOUR_CHANNEL_ID",
+        "type": "text",
+        "text": {"body": message}
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    return response.json()
+
+# Triggering the first pulse
+send_aura_pulse("📡 System Resonance Established. The 10th Pillar is LIVE. 🌊")
