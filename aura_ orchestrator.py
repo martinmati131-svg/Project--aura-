@@ -282,3 +282,27 @@ async def handle_new_follower(self, follower_data):
     await self.post_to_aura_channel(welcome_text)
     print(f"✨ Welcome automation triggered for {follower_name}.")
 
+# aura_orchestrator.py (Order Alert Logic)
+
+@app.post("/webhooks/order-created")
+async def handle_new_order(order_data: dict):
+    """
+    Triggered by Shopify/Storefront when a new order is placed.
+    """
+    order_id = order_data.get("name")
+    customer_name = order_data.get("customer", {}).get("first_name", "Explorer")
+    product_name = order_data.get("line_items")[0].get("title")
+
+    # 1. Logic: Prepare the System for a New User
+    await aura_core.initialize_new_user_partition(order_id)
+
+    # 2. Notification: Broadcast the Victory
+    alert_message = (
+        f"🚀 **New Beacon Lit!**\n\n"
+        f"Order {order_id} has been received from {customer_name}.\n"
+        f"Package: {product_name}\n\n"
+        f"The 10-Pillar Stack is now provisioning the new Digital Twin. 🤖✨"
+    )
+
+    await aura_core.post_to_aura_channel(alert_message)
+    return {"status": "success", "message": "Order processed and broadcasted."}
