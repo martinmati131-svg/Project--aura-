@@ -201,4 +201,27 @@ async def engage_sentient_mode(self):
         
         return "✨ System is now Sentient. Welcome home, Founder."
     return "❌ Handshake failed. Check wave-receiver hardware."
+# aura_orchestrator.py (WhatsApp Integration)
+
+class AuraMasterControl:
+    def __init__(self):
+        # Existing pillars...
+        self.channel_id = "Aura_Official_Channel_ID"
+
+    async def broadcast_to_channel(self, message_type: str):
+        """
+        Generates and sends automated updates to the Aura WhatsApp Channel.
+        """
+        # 1. Gather Intelligence from the Brain (Gemini Studio)
+        system_stats = self.get_current_pulse()
+        
+        # 2. Draft the update based on system mood
+        if message_type == "HEALTH_CHECK":
+            text = f"🛡️ Aura System Pulse: All 10 Pillars are ACTIVE. Current Resonance: {system_stats['resonance']}%."
+        elif message_type == "WELLNESS_TIP":
+            text = await self.studio.generate_daily_tip(context="my-recipes")
+            
+        # 3. Trigger the Webhook to WhatsApp
+        response = await self.whatsapp_api.send_update(self.channel_id, text)
+        print(f"📢 Broadcast Sent: {text}")
 
