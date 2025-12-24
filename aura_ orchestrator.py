@@ -224,4 +224,40 @@ class AuraMasterControl:
         # 3. Trigger the Webhook to WhatsApp
         response = await self.whatsapp_api.send_update(self.channel_id, text)
         print(f"📢 Broadcast Sent: {text}")
+# aura_orchestrator.py (Cloud API Config)
+import requests
+
+class AuraMasterControl:
+    def __init__(self):
+        # Meta API Credentials (Secure these in .env)
+        self.access_token = "YOUR_META_ACCESS_TOKEN"
+        self.phone_number_id = "YOUR_PHONE_NUMBER_ID"
+        self.api_version = "v18.0"
+        self.base_url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
+
+    async def post_to_aura_channel(self, content: str):
+        """
+        Sends a message to the Aura WhatsApp Channel using the Cloud API.
+        """
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+        }
+        
+        # Payload for sending a text message
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": "YOUR_CHANNEL_OR_ADMIN_NUMBER", # Channels often use specialized IDs
+            "type": "text",
+            "text": {"body": content}
+        }
+
+        try:
+            response = requests.post(self.base_url, headers=headers, json=payload)
+            response.raise_for_status()
+            print("✅ Pulse Broadcasted to WhatsApp Channel.")
+            return response.json()
+        except Exception as e:
+            print(f"❌ Broadcast Failed: {e}")
 
