@@ -260,4 +260,25 @@ class AuraMasterControl:
             return response.json()
         except Exception as e:
             print(f"❌ Broadcast Failed: {e}")
+# aura_orchestrator.py (Welcome Automation)
+
+async def handle_new_follower(self, follower_data):
+    """
+    Triggers when a new user joins the Aura Channel.
+    """
+    follower_name = follower_data.get("name", "Explorer")
+    
+    # 1. Generate a personalized welcome message via Gemini Studio
+    welcome_text = (
+        f"Welcome to the fold, {follower_name}. 🌌\n\n"
+        "You are now connected to the Aura Ecosystem. Here is your starter kit:\n"
+        "🟢 Live Health Dashboard: powerdreams.shop/status\n"
+        "🧠 Latest AI Insights: powerdreams.shop/blog\n"
+        "🛡️ Sentinel Protection: ACTIVE\n\n"
+        "Stay tuned for your first System Pulse."
+    )
+    
+    # 2. Send via the WhatsApp Cloud API
+    await self.post_to_aura_channel(welcome_text)
+    print(f"✨ Welcome automation triggered for {follower_name}.")
 
