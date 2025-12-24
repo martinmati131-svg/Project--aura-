@@ -835,3 +835,16 @@ async def public_health_check():
         },
         "version": "v1.5.0-Gemini-Powered"
     }
+# prediction_api.py
+
+@app.get("/webhook")
+async def verify_webhook(mode: str = Query(None, alias="hub.mode"), 
+                         token: str = Query(None, alias="hub.verify_token"), 
+                         challenge: str = Query(None, alias="hub.challenge")):
+    """
+    Validates your webhook with Meta's servers.
+    """
+    VERIFY_TOKEN = "your_chosen_secret_token"
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        return int(challenge)
+    raise HTTPException(status_code=403, detail="Verification failed")
