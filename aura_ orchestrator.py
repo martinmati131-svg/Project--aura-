@@ -327,3 +327,6 @@ def send_aura_pulse(message):
 
 # Triggering the first pulse
 send_aura_pulse("📡 System Resonance Established. The 10th Pillar is LIVE. 🌊")
+# aura_orchestrator.py
+if current_resonance < baseline_resonance * 0.85:
+    self.trigger_scaling_event("PREEMPTIVE_BOOST")
