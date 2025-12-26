@@ -330,3 +330,40 @@ send_aura_pulse("📡 System Resonance Established. The 10th Pillar is LIVE. �
 # aura_orchestrator.py
 if current_resonance < baseline_resonance * 0.85:
     self.trigger_scaling_event("PREEMPTIVE_BOOST")
+# aura_orchestrator.py (Drift Guard Module)
+import numpy as np
+
+class AuraMasterControl:
+    def __init__(self):
+        # Baseline: Your 'Stable' resonance from early December
+        self.resonance_baseline = 92.5 
+        self.drift_threshold = 0.10  # 10% deviation allowed
+        self.rolling_window = []
+
+    async def run_drift_guard(self, current_pulse_data: float):
+        """
+        Analyzes live resonance for statistical drift.
+        """
+        self.rolling_window.append(current_pulse_data)
+        if len(self.rolling_window) > 24: # Analyze last 24 hours
+            self.rolling_window.pop(0)
+
+        # Calculate Current Mean Resonance
+        current_mean = np.mean(self.rolling_window)
+        
+        # Check for Drift
+        drift_percentage = abs(current_mean - self.resonance_baseline) / self.resonance_baseline
+        
+        if drift_percentage > self.drift_threshold:
+            await self.trigger_drift_remedy(drift_percentage)
+        else:
+            print(f"✅ Drift Guard: System Stable (Drift: {drift_percentage:.2%})")
+
+    async def trigger_drift_remedy(self, drift_val: float):
+        """
+        Actions to take when drift is detected.
+        """
+        alert = f"⚠️ DRIFT DETECTED: {drift_val:.2%}. Scaling resources and refactoring Pillar 4..."
+        await self.post_to_aura_channel(alert)
+        # Auto-trigger scaling in Cloud (AWS/GCP/Azure)
+        # self.cloud_provider.scale_up() 
