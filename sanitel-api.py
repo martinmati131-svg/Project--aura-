@@ -20,3 +20,84 @@ async def trigger_honeypot(request: Request, background_tasks: BackgroundTasks):
     
     # 3. Misdirect the Bot: Give it fake, heavy data to waste its resources
     return {"status": "success", "data": "Generating encrypted admin logs... (0%)"}
+import os
+import json
+import requests
+import smtplib
+from datetime import datetime
+from flask import Flask, request, render_template_string
+from pyngrok import ngrok
+from google import generativeai as genai
+from email.message import EmailMessage
+
+# --- CONFIGURATION ---
+# App ID: 896941116042076
+PORT = 3000
+VERIFY_TOKEN = "aura_intelligence_2025"
+WHATSAPP_TOKEN = "YOUR_PERMANENT_SYSTEM_TOKEN"
+GEMINI_KEY = "YOUR_GEMINI_API_KEY"
+
+# Alert Settings (Use App Passwords for Gmail)
+ALERT_EMAIL = "your-email@gmail.com"
+EMAIL_PASS = "your-app-password"
+
+# Initialize Gemini
+genai.configure(api_key=GEMINI_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+app = Flask(__name__)
+logs = []
+
+def send_alert(error_msg):
+    """Sends an email alert if the Shadow Test fails."""
+    msg = EmailMessage()
+    msg.set_content(f"Aura Sentinel Alert: {error_msg}\nTimestamp: {datetime.now()}")
+    msg['Subject'] = "🚨 AURA SYSTEM CRITICAL FAILURE"
+    msg['From'] = ALERT_EMAIL
+    msg['To'] = ALERT_EMAIL
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(ALERT_EMAIL, EMAIL_PASS)
+            smtp.send_message(msg)
+    except Exception as e:
+        print(f"Failed to send email alert: {e}")
+
+@app.route('/webhook', methods=['GET'])
+def verify():
+    if request.args.get("hub.verify_token") == VERIFY_TOKEN:
+        return request.args.get("hub.challenge"), 200
+    return "Forbidden", 403
+
+@app.route('/webhook', methods=['POST'])
+def handle_incoming():
+    try:
+        data = request.json
+        message = data['entry'][0]['changes'][0]['value']['messages'][0]
+        user_phone = message['from']
+        user_text = message['text']['body']
+
+        # Process via Aura Persona
+        response = model.generate_content(f"You are Aura (Robotics AI). User: {user_text}")
+        ai_reply = response.text
+
+        # Log for Dashboard
+        logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "user": user_phone, "text": user_text, "reply": ai_reply})
+        
+        # Send back to WhatsApp
+        requests.post(
+            f"https://graph.facebook.com/v21.0/YOUR_PHONE_NUMBER_ID/messages",
+            json={"messaging_product": "whatsapp", "to": user_phone, "text": {"body": ai_reply}},
+            headers={"Authorization": f"Bearer {WHATSAPP_TOKEN}"}
+        )
+    except Exception as e:
+        send_alert(str(e))
+    return "OK", 200
+
+@app.route('/dashboard')
+def show_dashboard():
+    return render_template_string("<h1>Aura Mission Control</h1><ul>{% for l in logs %}<li><b>{{l.time}}</b>: {{l.text}} -> <i>{{l.reply}}</i></li>{% endfor %}</ul>", logs=logs)
+
+if __name__ == "__main__":
+    public_url = ngrok.connect(PORT).public_url
+    print(f"🚀 Sentinel Live: {public_url}/webhook")
+    app.run(port=PORT)
