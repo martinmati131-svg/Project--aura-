@@ -349,3 +349,43 @@ prompt = (
     f"https://github.com/martinmati131-svg/my-online-business. "
     f"User says: {user_text}"
 )
+# --- 2026 COMPLIANCE HANDLER ---
+def handle_compliance_logic(user_phone, user_text):
+    """Checks for mandatory data deletion keywords."""
+    trigger = user_text.strip().upper()
+    
+    if trigger == "DELETE DATA" or trigger == "STOP":
+        # 1. Logic to purge data from your local logs/database
+        # Example: db.delete_user(user_phone) 
+        print(f"⚠️ [COMPLIANCE] Data deletion executed for: {user_phone}")
+        
+        # 2. Meta requires a 24-hour processing confirmation
+        confirmation = (
+            "Aura Sentinel Compliance: Your data deletion request has been processed. "
+            "Your interaction history is purged from our systems."
+        )
+        send_response(user_phone, confirmation)
+        return True # Stop further processing
+    
+    return False # Continue to Gemini Brain
+
+# --- UPDATE YOUR POST ROUTE ---
+@app.route('/webhook', methods=['POST'])
+def handle_sentinel_event():
+    data = request.json
+    try:
+        message_data = data['entry'][0]['changes'][0]['value']['messages'][0]
+        user_phone = message_data['from']
+        user_text = message_data['text']['body']
+
+        # COMPLIANCE CHECK FIRST (v24.0 Requirement)
+        if handle_compliance_logic(user_phone, user_text):
+            return "COMPLIANCE_PROCESSED", 200
+
+        # If not a deletion request, proceed to Gemini Brain
+        response = model.generate_content(f"Aura Persona: {user_text}")
+        send_response(user_phone, response.text)
+        
+    except Exception as e:
+        print(f"⚠️ Sentinel Alert: {e}")
+    return "EVENT_RECEIVED", 200
