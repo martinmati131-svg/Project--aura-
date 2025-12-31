@@ -1,3 +1,35 @@
+DASHBOARD_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aura Mission Control</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; padding: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e293b; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
+        th { color: #38bdf8; text-transform: uppercase; font-size: 12px; }
+        .status { color: #4ade80; font-weight: bold; }
+        h1 { border-left: 4px solid #38bdf8; padding-left: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Aura Intelligence: Shadow Test Logs</h1>
+    <table>
+        <tr><th>Time</th><th>User</th><th>Input</th><th>Aura Response</th><th>Status</th></tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.user }}</td>
+            <td>{{ log.input }}</td>
+            <td>{{ log.aura_response }}</td>
+            <td class="status">{{ log.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+"""
+
 # sentinel_api.py
 from fastapi import Request, BackgroundTasks
 
