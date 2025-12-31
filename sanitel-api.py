@@ -221,3 +221,42 @@ if __name__ == "__main__":
     public_url = ngrok.connect(PORT).public_url
     print(f"🚀 Sentinel Live: {public_url}/webhook")
     app.run(port=PORT)
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// 1. WEBHOOK VERIFICATION (GET)
+// This is the "handshake" Meta uses to verify your server.
+app.get('/webhook', (req, res) => {
+    const VERIFY_TOKEN = "aura_intelligence_2025"; // You set this in Meta Dashboard
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode && token) {
+        if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+            console.log("✅ WEBHOOK_VERIFIED");
+            res.status(200).send(challenge);
+        } else {
+            res.sendStatus(403);
+        }
+    }
+});
+
+// 2. MESSAGE HANDLER (POST)
+app.post('/webhook', (req, res) => {
+    // Acknowledge immediately to prevent Meta from retrying (Reverse Logic)
+    res.status(200).send("EVENT_RECEIVED");
+
+    if (req.body.object && req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
+        const message = req.body.entry[0].changes[0].value.messages[0];
+        const from = message.from; // User's phone number
+        const msgBody = message.text.body; // The actual text
+
+        console.log(`📩 Incoming from ${from}: ${msgBody}`);
+        
+        // NEXT STEP: Send msgBody to Gemini for processing
+    }
+});
+
+app.listen(3000, () => console.log('🚀 Sentinel is listening on port 3000'));
