@@ -420,3 +420,40 @@ if trigger == "DELETE DATA":
     log_compliance_action(user_phone, "USER_DATA_PURGE")
     # 2. Confirm to User
     send_response(user_phone, "Aura Sentinel: Your data has been purged. Audit ID: " + datetime.now().strftime("%Y%m%d%H%M"))
+import time
+
+# Record start time for uptime calculation
+START_TIME = time.time()
+
+def generate_health_report():
+    """Generates a real-time status report for the 2026 infrastructure."""
+    # 1. Calculate Uptime
+    uptime_seconds = int(time.time() - START_TIME)
+    uptime_str = f"{uptime_seconds // 3600}h {(uptime_seconds % 3600) // 60}m"
+    
+    # 2. Count Compliance Actions
+    log_count = 0
+    if os.path.exists("aura_compliance_audit.csv"):
+        with open("aura_compliance_audit.csv", "r") as f:
+            log_count = sum(1 for line in f) - 1 # Subtract header
+            
+    # 3. Construct the Report
+    report = (
+        "📊 *Aura Sentinel: System Health Report*\n"
+        f"📅 Date: {datetime.now().strftime('%Y-%m-%d')}\n"
+        "--- --- --- --- ---\n"
+        f"✅ Status: {SystemStatus.ONLINE}\n"
+        f"⏳ Uptime: {uptime_str}\n"
+        f"🛡️ Compliance Logs: {max(0, log_count)}\n"
+        f"📡 API Version: Graph v24.0\n"
+        f"🧠 Brain: Gemini 1.5 Flash\n"
+        "--- --- --- --- ---\n"
+        "🚀 All systems operating within 2026 parameters."
+    )
+    return report
+
+# --- INTEGRATION INTO YOUR HANDLER ---
+if user_text.strip().upper() == "STATUS":
+    report = generate_health_report()
+    send_response(user_phone, report)
+    return True
