@@ -29,6 +29,72 @@ DASHBOARD_HTML = """
 </body>
 </html>
 """
+import os
+from flask import Flask, request, jsonify
+from pyngrok import ngrok
+from google import generativeai as genai
+import requests
+
+# --- CONFIGURATION ---
+# App ID: 896941116042076
+PORT = 3000
+VERIFY_TOKEN = "aura_intelligence_2025"
+WHATSAPP_TOKEN = "YOUR_PERMANENT_SYSTEM_TOKEN"
+GEMINI_KEY = "YOUR_GEMINI_API_KEY"
+
+# Initialize Gemini
+genai.configure(api_key=GEMINI_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+app = Flask(__name__)
+
+# 1. THE HANDSHAKE (GET)
+@app.route('/webhook', methods=['GET'])
+def verify():
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        print("✅ Meta Handshake Verified")
+        return challenge, 200
+    return "Forbidden", 403
+
+# 2. THE BRAIN (POST)
+@app.route('/webhook', methods=['POST'])
+def handle_messages():
+    data = request.json
+    try:
+        if "messages" in data["entry"][0]["changes"][0]["value"]:
+            message = data["entry"][0]["changes"][0]["value"]["messages"][0]
+            user_phone = message["from"]
+            user_text = message["text"]["body"]
+            
+            # Aura Persona Logic
+            prompt = f"Role: Aura (Robotics AI). Goal: Scale business & Zen Flow. User says: {user_text}"
+            response = model.generate_content(prompt)
+            
+            # Send Reply back to WhatsApp
+            send_whatsapp(user_phone, response.text)
+            
+    except Exception as e:
+        print(f"❌ Processing Error: {e}")
+        
+    return "EVENT_RECEIVED", 200
+
+def send_whatsapp(to, text):
+    url = f"https://graph.facebook.com/v21.0/YOUR_PHONE_NUMBER_ID/messages"
+    headers = {"Authorization": f"Bearer {WHATSAPP_TOKEN}", "Content-Type": "application/json"}
+    payload = {"messaging_product": "whatsapp", "to": to, "type": "text", "text": {"body": text}}
+    requests.post(url, json=payload, headers=headers)
+
+if __name__ == "__main__":
+    # Start ngrok tunnel via Python
+    public_url = ngrok.connect(PORT).public_url
+    print(f"🚀 Aura is LIVE at: {public_url}/webhook")
+    print(f"👉 Copy the URL above into your Meta Dashboard (App ID: 896941116042076)")
+    
+    app.run(port=PORT)
+
 # Simple in-memory log storage
 shadow_test_logs = []
 
