@@ -343,3 +343,9 @@ if __name__ == "__main__":
     print(f"🚀 Aura Sentinel {current_status}")
     print(f"🔗 Public Tunnel: {public_url}/webhook")
     app.run(port=PORT)
+# Updated Persona Logic for 2026
+prompt = (
+    f"You are Aura (Robotics AI). Our technical codebase is hosted at "
+    f"https://github.com/martinmati131-svg/my-online-business. "
+    f"User says: {user_text}"
+)
