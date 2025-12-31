@@ -272,3 +272,74 @@ app.post('/webhook', (req, res) => {
 });
 
 app.listen(3000, () => console.log('🚀 Sentinel is listening on port 3000'));
+import os
+import time
+import requests
+from flask import Flask, request, jsonify
+from pyngrok import ngrok
+from google import generativeai as genai
+from datetime import datetime
+
+# --- SYSTEM STATES (Sentinel Pattern) ---
+class SystemStatus:
+    ONLINE = "🟢 ACTIVE"
+    MAINTENANCE = "🟡 SYNCING"
+    ERROR = "🔴 CRITICAL"
+
+# --- CONFIGURATION ---
+# App ID: 896941116042076
+PORT = 3000
+VERIFY_TOKEN = "aura_intelligence_2026"
+WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+
+# Initialize Aura Brain
+genai.configure(api_key=GEMINI_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+app = Flask(__name__)
+current_status = SystemStatus.ONLINE
+
+@app.route('/webhook', methods=['GET'])
+def meta_handshake():
+    # 2026 Handshake v24.0 Logic
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        print(f"[{datetime.now()}] ✅ Handshake v24.0 Successful")
+        return challenge, 200
+    return "Forbidden", 403
+
+@app.route('/webhook', methods=['POST'])
+def handle_sentinel_event():
+    data = request.json
+    # Sentinel Logic: Log every incoming packet for the Shadow Test
+    print(f"[{datetime.now()}] 📡 Incoming Packet: {data}")
+    
+    try:
+        # Process message via Gemini
+        user_msg = data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
+        response = model.generate_content(f"Aura Persona: Process input '{user_msg}'")
+        
+        # Send back to Meta
+        # Note: In 2026, we use v24.0 for the Graph API
+        send_response(data['entry'][0]['changes'][0]['value']['messages'][0]['from'], response.text)
+        
+    except Exception as e:
+        print(f"⚠️ Sentinel Alert: {e}")
+        
+    return "EVENT_RECEIVED", 200
+
+def send_response(to, text):
+    url = f"https://graph.facebook.com/v24.0/YOUR_PHONE_NUMBER_ID/messages"
+    headers = {"Authorization": f"Bearer {WHATSAPP_TOKEN}"}
+    payload = {"messaging_product": "whatsapp", "to": to, "text": {"body": text}}
+    requests.post(url, json=payload, headers=headers)
+
+if __name__ == "__main__":
+    # Start ngrok tunnel
+    public_url = ngrok.connect(PORT).public_url
+    print(f"🚀 Aura Sentinel {current_status}")
+    print(f"🔗 Public Tunnel: {public_url}/webhook")
+    app.run(port=PORT)
