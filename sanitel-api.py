@@ -117,6 +117,18 @@ def handle_messages():
     shadow_test_logs.insert(0, log_entry) # Keep newest at top
     shadow_test_logs[:] = shadow_test_logs[:10] # Keep only last 10
     return "EVENT_RECEIVED", 200
+app.get('/webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode === 'subscribe' && token === 'YOUR_CUSTOM_TOKEN_HERE') {
+    res.status(200).send(challenge); // This "echo" bypasses the restriction
+  } else {
+    res.sendStatus(403);
+  }
+});
+
 
 # sentinel_api.py
 from fastapi import Request, BackgroundTasks
