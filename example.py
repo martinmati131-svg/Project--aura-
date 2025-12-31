@@ -41,3 +41,5 @@ def post_to_google_portfolio(content):
     print(f"📡 Posting to Aura Portfolio: {content}")
     # Logic to send to mybusiness.googleapis.com
 
+# Change from v21.0 to v24.0 (The 2026 Standard)
+url = f"https://graph.facebook.com/v24.0/{phoneNumberId}/messages"
