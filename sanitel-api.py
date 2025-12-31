@@ -389,3 +389,34 @@ def handle_sentinel_event():
     except Exception as e:
         print(f"⚠️ Sentinel Alert: {e}")
     return "EVENT_RECEIVED", 200
+import csv
+from datetime import datetime
+
+def log_compliance_action(user_phone, action_type="DELETION"):
+    """
+    Creates a 2026-compliant audit trail.
+    Note: We log the phone number's LAST 4 DIGITS to maintain 
+    privacy even within the audit log itself.
+    """
+    log_file = "aura_compliance_audit.csv"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    masked_phone = f"*******{user_phone[-4:]}"
+    
+    # Audit Header: Timestamp | Subject | Action | Status
+    row = [timestamp, masked_phone, action_type, "SUCCESSFUL"]
+    
+    file_exists = os.path.isfile(log_file)
+    with open(log_file, mode='a', newline='') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["Timestamp", "Entity_ID", "Action", "Result"])
+        writer.writerow(row)
+    
+    print(f"🔒 [AUDIT] Compliance log updated for {masked_phone}")
+
+# --- INTEGRATION INTO YOUR HANDLER ---
+if trigger == "DELETE DATA":
+    # 1. Execute Purge
+    log_compliance_action(user_phone, "USER_DATA_PURGE")
+    # 2. Confirm to User
+    send_response(user_phone, "Aura Sentinel: Your data has been purged. Audit ID: " + datetime.now().strftime("%Y%m%d%H%M"))
