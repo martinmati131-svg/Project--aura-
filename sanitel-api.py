@@ -457,3 +457,28 @@ if user_text.strip().upper() == "STATUS":
     report = generate_health_report()
     send_response(user_phone, report)
     return True
+import subprocess
+
+def push_to_github():
+    """Automatically syncs the compliance log to the GitHub repository."""
+    try:
+        # 1. Stage the compliance log
+        subprocess.run(["git", "add", "aura_compliance_audit.csv"], check=True)
+        
+        # 2. Commit with a 2026-style timestamp
+        commit_msg = f"Sentinel Pulse: Compliance Sync {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        
+        # 3. Push to your repository: martinmati131-svg/my-online-business
+        subprocess.run(["git", "push", "origin", "main"], check=True)
+        
+        print("🚀 [GITHUB] Portfolio Heartbeat Successful")
+    except Exception as e:
+        print(f"⚠️ [GITHUB] Sync Failed: {e}")
+
+# --- UPDATE YOUR COMPLIANCE LOG FUNCTION ---
+def log_compliance_action(user_phone, action_type="DELETION"):
+    # ... (existing logging code) ...
+    
+    # NEW: Trigger the GitHub Sync
+    push_to_github()
