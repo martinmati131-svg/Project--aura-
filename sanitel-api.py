@@ -29,6 +29,28 @@ DASHBOARD_HTML = """
 </body>
 </html>
 """
+# Simple in-memory log storage
+shadow_test_logs = []
+
+@app.route('/dashboard')
+def dashboard():
+    # Renders the logs in a clean HTML table
+    return render_template_string(DASHBOARD_HTML, logs=shadow_test_logs)
+
+@app.post('/webhook')
+def handle_messages():
+    # ... previous logic ...
+    # Add to logs for the dashboard
+    log_entry = {
+        "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "user": user_phone,
+        "input": user_text,
+        "aura_response": ai_reply,
+        "status": "✅ Success"
+    }
+    shadow_test_logs.insert(0, log_entry) # Keep newest at top
+    shadow_test_logs[:] = shadow_test_logs[:10] # Keep only last 10
+    return "EVENT_RECEIVED", 200
 
 # sentinel_api.py
 from fastapi import Request, BackgroundTasks
