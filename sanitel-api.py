@@ -505,3 +505,40 @@ def upload_to_aura_vault(file_path, file_name):
     ).execute()
     
     print(f"📁 [VAULT] File Synced: {file_name} (ID: {uploaded_file.get('id')})")
+import requests
+
+# YOUR CONFIGURATION
+BROCHURE_URL = "https://drive.google.com/uc?export=download&id=FILE_ID_HERE"
+WHATSAPP_TOKEN = "YOUR_META_ACCESS_TOKEN"
+PHONE_NUMBER_ID = "YOUR_PHONE_NUMBER_ID"
+
+def send_brochure(recipient_number):
+    """Dispatches the Aura Intelligence Brochure via Meta API."""
+    url = f"https://graph.facebook.com/v24.0/{PHONE_NUMBER_ID}/messages"
+    
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": recipient_number,
+        "type": "document",
+        "document": {
+            "link": BROCHURE_URL,
+            "filename": "Aura_Intelligence_Welcome_2026.pdf",
+            "caption": "Welcome to Aura Intelligence. Here is our 2026 Capabilities Report."
+        }
+    }
+    
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+# --- INSIDE YOUR WEBHOOK HANDLER ---
+def handle_message(msg_text, user_phone):
+    keywords = ["hello", "hi", "start", "aura", "info"]
+    
+    if any(word in msg_text.lower() for word in keywords):
+        send_brochure(user_phone)
+        return "Brochure Sent"
