@@ -482,3 +482,26 @@ def log_compliance_action(user_phone, action_type="DELETION"):
     
     # NEW: Trigger the GitHub Sync
     push_to_github()
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+# YOUR FOLDER ID FROM DRIVE
+AURA_VAULT_ID = "139ohKDb9zvcNgU4J6BIb_5AmwF2qxUi3"
+
+def upload_to_aura_vault(file_path, file_name):
+    """Uploads a report or log to the Aura Intelligence Google Drive folder."""
+    creds = service_account.Credentials.from_service_account_file(
+        'drive_creds.json', 
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+    service = build('drive', 'v3', credentials=creds)
+    
+    file_metadata = {'name': file_name, 'parents': [AURA_VAULT_ID]}
+    media = MediaFileUpload(file_path, resumable=True)
+    
+    uploaded_file = service.files().create(
+        body=file_metadata, media_body=media, fields='id'
+    ).execute()
+    
+    print(f"📁 [VAULT] File Synced: {file_name} (ID: {uploaded_file.get('id')})")
