@@ -1,0 +1,25 @@
+from pxr import Usd, UsdLux, Sdf
+
+# SETUP: Create a stage with a dedicated lighting sublayer
+stage = Usd.Stage.CreateInMemory()
+root = stage.GetRootLayer()
+light_layer = Sdf.Layer.CreateAnonymous("LightingLayer")
+root.subLayerPaths.append(light_layer.identifier)
+
+# AUTHOR: Add a light to that specific sublayer
+stage.SetEditTarget(Usd.EditTarget(light_layer))
+sun = UsdLux.DistantLight.Define(stage, "/Sun")
+sun.CreateIntensityAttr().Set(5000)
+
+# TOGGLE LOGIC:
+def set_lighting_state(stage, layer_id, enabled=True):
+    if enabled:
+        stage.UnmuteLayer(layer_id)
+        print(">> Lighting Enabled (Aura Mode)")
+    else:
+        stage.MuteLayer(layer_id)
+        print(">> Lighting Disabled (Dark Mode)")
+
+# Test the toggle
+set_lighting_state(stage, light_layer.identifier, enabled=False) # Mutes lights
+set_lighting_state(stage, light_layer.identifier, enabled=True)  # Restores lights
