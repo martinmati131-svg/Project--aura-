@@ -1,0 +1,38 @@
+from pxr import Usd, UsdLux, UsdGeom, Sdf
+
+# 1. Open your stage
+file_path = "_assets/attributes_ex1.usda"
+stage = Usd.Stage.Open(file_path)
+world_prim = stage.GetPrimAtPath("/World")
+
+# 2. Create the VariantSet on the World prim
+vset = world_prim.GetVariantSets().AddVariantSet("LightingMode")
+
+# 3. Add individual variants
+vset.AddVariant("Day")
+vset.AddVariant("Night")
+vset.AddVariant("Aura")
+
+# 4. Author data inside the "Aura" variant
+vset.SetVariantSelection("Aura")
+with vset.GetVariantEditContext():
+    # Inside this context, any edits go ONLY into the 'Aura' variant
+    aura_light = UsdLux.SphereLight.Define(stage, "/World/AuraGlow")
+    aura_light.CreateIntensityAttr().Set(3000)
+    aura_light.CreateColorAttr().Set((0, 0.8, 1.0)) # Cyan glow
+
+# 5. Author data inside the "Night" variant
+vset.SetVariantSelection("Night")
+with vset.GetVariantEditContext():
+    # Turn off existing lights or change colors for Night mode
+    night_sun = UsdLux.DistantLight.Define(stage, "/World/SunLight")
+    night_sun.CreateIntensityAttr().Set(10)
+    night_sun.CreateColorAttr().Set((0.1, 0.1, 0.3)) # Deep blue
+
+# 6. Select the default variant
+vset.SetVariantSelection("Day")
+
+stage.Save()
+print("VariantSet 'LightingMode' created successfully.")
+# Switch the whole scene to Aura Mode
+world_prim.GetVariantSets().GetVariantSet("LightingMode").SetVariantSelection("Aura")
