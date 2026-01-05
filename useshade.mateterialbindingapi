@@ -1,0 +1,44 @@
+from pxr import Usd, UsdGeom, UsdShade, Sdf
+
+# 1. Open your existing stage
+file_path = "_assets/relationships_ex1.usda"
+stage = Usd.Stage.Open(file_path)
+world_prim = stage.GetPrimAtPath("/World")
+
+# 2. Setup Materials
+looks_scope = UsdGeom.Scope.Define(stage, "/World/Looks")
+
+def create_preview_material(name, diffuse_color, emissive_color=(0,0,0)):
+    mtl = UsdShade.Material.Define(stage, f"/World/Looks/{name}")
+    shader = UsdShade.Shader.Define(stage, f"/World/Looks/{name}/Shader")
+    shader.CreateIdAttr("UsdPreviewSurface")
+    shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(diffuse_color)
+    shader.CreateInput("emissiveColor", Sdf.ValueTypeNames.Color3f).Set(emissive_color)
+    mtl.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
+    return mtl
+
+mat_basic = create_preview_material("BasicMat", (0.8, 0.8, 0.8))
+mat_aura = create_preview_material("AuraMat", (0, 0.2, 0.5), (0, 0.5, 1.0))
+
+# 3. Create the VariantSet for Shading
+vset = world_prim.GetVariantSets().AddVariantSet("ShadingMode")
+vset.AddVariant("Basic")
+vset.AddVariant("Aura")
+
+# 4. Author the "Aura" look
+vset.SetVariantSelection("Aura")
+with vset.GetVariantEditContext():
+    # Bind Aura material to both sphere and cube
+    for path in ["/World/Sphere", "/World/Cube"]:
+        prim = stage.GetPrimAtPath(path)
+        UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat_aura)
+
+# 5. Author the "Basic" look
+vset.SetVariantSelection("Basic")
+with vset.GetVariantEditContext():
+    for path in ["/World/Sphere", "/World/Cube"]:
+        prim = stage.GetPrimAtPath(path)
+        UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat_basic)
+
+stage.Save()
+print("Material VariantSet 'ShadingMode' created.")
