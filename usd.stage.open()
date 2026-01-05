@@ -1,0 +1,26 @@
+from pxr import Usd, UsdLux, UsdGeom, Gf
+
+# 1. Open your stage
+stage = Usd.Stage.Open("_assets/first_stage.usda")
+
+# 2. Add a Dome Light (Environment Light)
+# This provides global ambient light from all directions
+dome = UsdLux.DomeLight.Define(stage, "/World/SkyLight")
+dome.CreateIntensityAttr().Set(1000)
+dome.CreateColorAttr().Set((0.7, 0.8, 1.0))
+
+# 3. Add a Distant Light (The Sun)
+sun = UsdLux.DistantLight.Define(stage, "/World/SunLight")
+sun.CreateIntensityAttr().Set(500)
+
+# 4. Position/Rotate the Distant Light
+# Since DistantLights act like the sun, their 'position' doesn't matter as much 
+# as their 'rotation' (the direction the rays are pointing).
+xform_api = UsdGeom.XformCommonAPI(sun)
+# Rotate 45 degrees on X and 45 on Y to point it diagonally down
+xform_api.SetRotate((45, 45, 0)) 
+
+# 5. Save and Print
+stage.Save()
+print("Lights added and positioned.")
+print(stage.ExportToString(addSourceFileComment=False))
