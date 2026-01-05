@@ -1,0 +1,5 @@
+from pxr import Usd
+
+# Create a new stage at a specific path
+# The file extension (.usd, .usda, or .usdc) determines the format
+stage = Usd.Stage.CreateNew("my_scene.usda")
