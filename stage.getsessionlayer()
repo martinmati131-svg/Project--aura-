@@ -18,3 +18,11 @@ temp_light.CreateColorAttr().Set((1, 0.9, 0.7))
 # 5. Save the STAGE
 stage.Save() 
 # result: 'prims.usda' is saved, BUT 'temp_work_light' IS NOT IN THE FILE.
+# If you have a light in your Root layer, you can "mute" it 
+# by authoring a 0 intensity override in the Session Layer.
+stage.SetEditTarget(stage.GetSessionLayer())
+
+# Overriding an existing light at /World/SunLight
+sun_override = UsdLux.DistantLight.Get(stage, "/World/SunLight")
+if sun_override:
+    sun_override.CreateIntensityAttr().Set(0) # Temporarily "turn off" the sun
