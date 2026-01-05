@@ -1,0 +1,40 @@
+from pxr import Usd, Sdf, UsdLux, UsdGeom, Gf
+import os
+
+# 1. Create the Stage and Root Layer
+stage: Usd.Stage = Usd.Stage.CreateNew("_assets/root_layer_example.usda")
+root_layer: Sdf.Layer = stage.GetRootLayer()
+
+# 2. Define the Root Prim (This stays in the Root Layer)
+stage.DefinePrim("/World", "Xform")
+
+# 3. Create and add a Sublayer (The "Extra" layer)
+extra_layer_path = "_assets/extra_layer.usdc"
+extra_layer: Sdf.Layer = Sdf.Layer.CreateNew(extra_layer_path)
+rel_path = "./" + os.path.basename(extra_layer.identifier)
+root_layer.subLayerPaths.append(rel_path)
+
+# --- KEY STEP: Change Edit Target to the Sublayer ---
+# Any commands after this line will be written to extra_layer.usdc
+stage.SetEditTarget(Usd.EditTarget(extra_layer))
+
+# 4. Add Lights to the Sublayer
+# Environment Dome Light
+dome = UsdLux.DomeLight.Define(stage, "/World/SkyLight")
+dome.CreateIntensityAttr().Set(1000)
+dome.CreateColorAttr().Set((0.7, 0.8, 1.0))
+
+# Distant "Sun" Light
+sun = UsdLux.DistantLight.Define(stage, "/World/SunLight")
+sun.CreateIntensityAttr().Set(500)
+UsdGeom.XformCommonAPI(sun).SetRotate((45, 45, 0))
+
+# 5. Save and Inspect
+stage.Save() # Saves all layers (Root and Sublayer)
+extra_layer.Save()
+
+print("Root Layer contents (Should show sublayer link):")
+print(root_layer.ExportToString())
+
+print("\nExtra Layer contents (Should show the Light definitions):")
+print(extra_layer.ExportToString())
