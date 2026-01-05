@@ -17,3 +17,23 @@ sun.CreateAngleAttr().Set(0.5) # This creates soft shadows
 # --- IMPORTANT: Save your changes to the file ---
 stage.Save()
 print("Lights successfully added and saved to the stage.")
+
+from pxr import Usd, UsdLux, Sdf
+
+# --- Assuming 'stage' exists from your previous code ---
+
+# 1. Add a Dome Light (Environment Light)
+# We define it at the path "/World/Lights/SkyLight"
+dome = UsdLux.DomeLight.Define(stage, "/World/Lights/SkyLight")
+dome.CreateIntensityAttr().Set(1000)
+dome.CreateColorAttr().Set((0.7, 0.8, 1.0)) # Soft blue tint
+
+# 2. Add a Distant Light (Like the Sun)
+# We define it at the path "/World/Lights/SunLight"
+sun = UsdLux.DistantLight.Define(stage, "/World/Lights/SunLight")
+sun.CreateIntensityAttr().Set(500)
+sun.CreateAngleAttr().Set(0.5) # This creates soft shadows
+
+# --- IMPORTANT: Save your changes to the file ---
+stage.Save()
+print("Lights successfully added and saved to the stage.")
