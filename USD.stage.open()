@@ -1,0 +1,2 @@
+# Open the file we just created
+stage = Usd.Stage.Open("my_scene.usda")
