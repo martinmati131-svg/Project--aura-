@@ -1,0 +1,28 @@
+from pxr import Usd, UsdLux, UsdGeom, Gf
+
+# 1. Create a new stage stored only in memory
+stage: Usd.Stage = Usd.Stage.CreateInMemory()
+
+# 2. Add a root Xform
+root = UsdGeom.Xform.Define(stage, "/World")
+
+# 3. Add a Dome Light (Environment/Sky lighting)
+# This provides uniform light from all directions
+dome = UsdLux.DomeLight.Define(stage, "/World/SkyLight")
+dome.CreateIntensityAttr().Set(1000)
+dome.CreateColorAttr().Set((0.7, 0.8, 1.0)) # Soft blue tint
+
+# 4. Add a Distant Light (Directional/Sun lighting)
+sun = UsdLux.DistantLight.Define(stage, "/World/SunLight")
+sun.CreateIntensityAttr().Set(500)
+
+# 5. Position the Distant Light
+# We use XformCommonAPI to rotate the sun so it hits the scene at an angle
+UsdGeom.XformCommonAPI(sun).SetRotate((45, 45, 0))
+
+# 6. Print the in-memory contents to see the new light definitions
+print("In-memory stage with lighting:")
+print(stage.ExportToString(addSourceFileComment=False))
+
+# 7. Export the final result to disk
+stage.Export("_assets/lit_in_memory_stage.usda")
