@@ -550,4 +550,21 @@ class AuraSentinel:
     def run_safety_audit(self):
         # Insert the collision report logic here
         pass
+def calculate_reward(self):
+    """
+    Called by Isaac Lab to 'score' the robot's current action.
+    """
+    reward = 1.0  # Base positive reward for surviving
+    
+    # 1. Penalty for Collisions (from our existing logic)
+    if self._check_collisions():
+        reward -= 50.0  # Heavy penalty for hitting something
+        
+    # 2. Penalty for 'Aura' violation (proximity)
+    # If the robot enters the Sentinel's restricted 'Cyan' zone
+    if self.check_proximity_violation():
+        reward -= 5.0
+        
+    return reward
+
 
