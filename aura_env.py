@@ -22,3 +22,21 @@ class AuraEnv(ManagerBasedRLEnv):
         """Using the Sentinel to grade the robot."""
         # This calls the custom reward logic we discussed!
         return self.sentinel.calculate_reward()
+
+from gr00t.eval.policy import Gr00tPolicy
+
+class AuraGrootEnv(ManagerBasedRLEnv):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        # Load the N1.6-3B weights from Hugging Face
+        self.policy = Gr00tPolicy.from_pretrained("nvidia/GR00T-N1.6-3B")
+        self.action_horizon = 8 # Process 8 frames of motion at once
+
+    def get_action(self, obs):
+        # N1.6 takes images + text instructions
+        instruction = "Safely move the pallet to Zone A"
+        action_chunks = self.policy.predict(obs['image'], instruction)
+        
+        # The Sentinel checks the ENTIRE chunk for safety violations
+        safe_action = self.sentinel.verify_trajectory(action_chunks)
+        return safe_action
