@@ -1,0 +1,25 @@
+# --- Core Math & Data ---
+numpy==1.26.4
+pandas==2.2.0
+scipy==1.12.0
+
+# --- Robotics & Physics (OpenUSD) ---
+# Note: These are interfaces; actual simulation runs on your RTX workstation
+pxr-usd-pc==23.11
+omniverse-launcher==1.9.10
+
+# --- Reinforcement Learning (The Brain) ---
+gymnasium==0.29.1
+stable-baselines3[extra]==2.2.1
+torch==2.2.0
+torchvision==0.17.0
+
+# --- Aura Sentinel API Dependencies ---
+grpcio==1.60.0
+grpcio-tools==1.60.0
+pydantic==2.6.1
+
+# --- Utilities & Monitoring ---
+tqdm==4.66.1
+matplotlib==3.8.2
+pyyaml==6.0.1
