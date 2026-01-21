@@ -1,0 +1,10 @@
+{
+  "name": "Project Aura Dev",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "nvidiv.usd-vscode"]
+    }
+  },
+  "postCreateCommand": "pip install -r requirements.txt"
+}
