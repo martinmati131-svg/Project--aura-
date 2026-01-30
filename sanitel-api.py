@@ -568,3 +568,27 @@ def calculate_reward(self):
     return reward
 
 
+import omni.isaac.core.utils.prims as prim_utils
+from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles
+
+class SentinelGuard:
+    def __init__(self, robot_prim_path, safety_threshold=0.5):
+        self.robot_path = robot_prim_path
+        self.threshold = safety_threshold  # Meters
+
+    def verify_action_chunk(self, action_chunk, sensor_data):
+        """
+        Interprets predicted actions from GR00T and checks for 
+        potential collisions before execution.
+        """
+        for step in action_chunk:
+            # Simple Euclidean distance check for obstacles in sensor data
+            if any(dist < self.threshold for dist in sensor_data['lidar_distances']):
+                print("⚠️ SENTINEL ALERT: Obstacle detected. Clipping action.")
+                return self.emergency_stop()
+        
+        return action_chunk # Action is safe
+
+    def emergency_stop(self):
+        # Return a zero-velocity action to freeze the robot
+        return [0.0] * 7 # Assuming 7-DOF arm
