@@ -592,3 +592,40 @@ class SentinelGuard:
     def emergency_stop(self):
         # Return a zero-velocity action to freeze the robot
         return [0.0] * 7 # Assuming 7-DOF arm
+
+import RPi.GPIO as GPIO
+import time
+
+# Pin Configuration
+RELAY_PIN = 18  # The physical GPIO pin connected to the relay
+
+def setup_hardware():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(RELAY_PIN, GPIO.OUT)
+    # Start with the relay OFF (Circuit Open) for safety
+    GPIO.output(RELAY_PIN, GPIO.LOW)
+    print("Sentinel Physical Layer: Initialized & Secure")
+
+def trigger_power(state):
+    """
+    True  -> Closes relay, allows motor power.
+    False -> Opens relay, cuts motor power (Hard Stop).
+    """
+    if state:
+        GPIO.output(RELAY_PIN, GPIO.HIGH)
+        print("Status: SYSTEM ACTIVE - Power Routed to Actuators")
+    else:
+        GPIO.output(RELAY_PIN, GPIO.LOW)
+        print("STATUS: EMERGENCY STOP - Hardware Isolated")
+
+try:
+    setup_hardware()
+    # Logic Loop: In production, this replaces manual input with API signals
+    while True:
+        # Example: Monitoring the Sentinel API 'Safety Status'
+        trigger_power(True) 
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("Manual Override Detected. Shutting down.")
+finally:
+    GPIO.cleanup()
