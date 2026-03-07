@@ -20,3 +20,23 @@ Get a fully configured Aura environment running in seconds. No local drivers req
 3. **Launch Simulation:**
    ```bash
    python aura_env.py --headless
+
+# Aura Intelligence: Project Aura 🤖
+> Research into Edge-AI, ROS 2 Jazzy, and VLA model integration.
+
+## 🚀 Overview
+Project Aura focuses on deploying the **GR00T N1.6-3B** model on **Raspberry Pi 5** for precision pallet handling. This repository contains the hardware configurations, telemetry sync logic, and LoRA fine-tuning parameters.
+
+## 🛠 Tech Stack
+* **Hardware:** Raspberry Pi 5, NEMA 17 Stepper Motors.
+* **Middleware:** ROS 2 Jazzy, Sentinel API.
+* **Cloud:** Google Cloud (GCS & Vertex AI).
+* **AI:** NVIDIA GR00T-N1.6-3B (Vision-Language-Action).
+
+## 📂 Key Documentation
+For detailed engineering logs and business strategy (M2M), visit our official research blog:
+👉 [Aura Intelligence Blog](https://auraintelligence1.blogspot.com/)
+
+## 📜 License
+Licensed under the **Apache License 2.0**. See the `LICENSE` file for details.
+
