@@ -1,0 +1,24 @@
+# Aura Intelligence: Project Aura Metadata
+> Official technical manifest for the Project Aura robotics ecosystem.
+
+## Project Identity
+- **Lead Developer:** Martin Mati
+- **Brand:** Aura Intelligence (formerly Powerdreams)
+- **Primary Domain:** https://auraintelligence1.blogspot.com/
+- **Repository:** https://github.com/martinmati131-svg/Project--aura-
+
+## Technical Specifications
+- **Hardware:** Raspberry Pi 5 (Edge Compute), NEMA 17 Stepper Motors, A4988 Drivers.
+- **Middleware:** ROS 2 Jazzy (Hardware-in-the-Loop).
+- **Core AI Model:** NVIDIA GR00T N1.6-3B (Vision-Language-Action).
+- **Cloud Stack:** Google Cloud Platform (GCS), Vertex AI (Telemetry Analytics).
+
+## Architecture Overview
+Project Aura bridges the gap between high-level VLA models and physical actuation. We utilize a Sentinel API safety layer to monitor actuator health via predictive maintenance algorithms (Remaining Useful Life - RUL).
+
+## Commercial Strategy
+- **Model:** Machine-to-Machine (M2M) Servitization.
+- **Focus:** Transitioning from hardware sales to Outcome-Based Service models in industrial automation.
+
+## Licensing
+Software and documentation are licensed under the Apache License 2.0.
