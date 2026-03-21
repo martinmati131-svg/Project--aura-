@@ -165,7 +165,7 @@ from email.message import EmailMessage
 # --- CONFIGURATION ---
 # App ID: 896941116042076
 PORT = 3000
-VERIFY_TOKEN = "aura_intelligence_2025"
+VERIFY_TOKEN = "aura_intelligence_2026"
 WHATSAPP_TOKEN = "YOUR_PERMANENT_SYSTEM_TOKEN"
 GEMINI_KEY = "YOUR_GEMINI_API_KEY"
 
