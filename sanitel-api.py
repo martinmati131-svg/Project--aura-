@@ -240,7 +240,7 @@ app.use(express.json());
 // 1. WEBHOOK VERIFICATION (GET)
 // This is the "handshake" Meta uses to verify your server.
 app.get('/webhook', (req, res) => {
-    const VERIFY_TOKEN = "aura_intelligence_2025"; // You set this in Meta Dashboard
+    const VERIFY_TOKEN = "aura_intelligence_2026"; // You set this in Meta Dashboard
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
@@ -271,7 +271,7 @@ app.post('/webhook', (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('🚀 Sentinel is listening on port 3000'));
+app.listen(3145, () => console.log('🚀 Sentinel is listening on port 3145'));
 import os
 import time
 import requests
