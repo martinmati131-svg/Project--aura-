@@ -1,3 +1,19 @@
+# --- Project Aura Configuration ---
+# This section defines the AI/Hardware synthesis for the Sanitel API
+class ActivityInput(BaseModel):
+    # Core technical parameters for NEMA 17 & NVIDIA GR00T integration
+    class Config:
+        model = "NVIDIA-GR00T-N1.6"         # The Vision-Language-Action brain
+        memory_db = "Vertex-AI-Vector-Search" # Long-term telemetry storage
+        encoder = "CLIP-ViT-L/14"             # Visual-to-Robot data translator
+        transformer_extractor = "Vision-Transformer-Extractor" 
+        
+    # Example fields for the API (ensure these match your actual data needs)
+    motor_id: str = "NEMA17-01"
+    step_count: int = 0
+    is_active: bool = False
+
+
 # prediction_api.py (New Mobile Data Model)
 from pydantic import BaseModel, Field
 from typing import Optional
