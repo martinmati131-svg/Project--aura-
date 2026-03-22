@@ -629,3 +629,14 @@ except KeyboardInterrupt:
     print("Manual Override Detected. Shutting down.")
 finally:
     GPIO.cleanup()
+@app.get("/status")
+async def get_aura_status():
+    return {
+        "status": "online",
+        "hardware": "NEMA 17 Stepper",
+        "controller": "Raspberry Pi 5",
+        "active_model": ActivityInput.Config.model,
+        "database": ActivityInput.Config.memory_db,
+        "message": "Aura Intelligence System is Operational"
+    }
+
