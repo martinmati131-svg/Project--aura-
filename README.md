@@ -40,4 +40,13 @@ For detailed engineering logs and business strategy (M2M), visit our official re
 ## 📜 License
 Licensed under the **Apache License 2.0**. See the `LICENSE` file for details.
 
+## ## Project Aura API: Getting Started
+To run the local backend for hardware telemetry:
+
+1. Install dependencies: `pip install fastapi uvicorn`
+2. Start the server:
+   ```bash
+   uvicorn sanitel-api:app --port 3000
+
+
 
