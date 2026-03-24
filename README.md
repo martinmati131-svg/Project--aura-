@@ -1,7 +1,7 @@
 
 # Project Aura: Intelligence Governed 🤖🛡️
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![NVIDIA Isaac Sim](https://img.shields.io/badge/Simulation-Isaac_Sim_2024.1-green.svg)](https://developer.nvidia.com/isaac-sim)
 [![AdSense Ready](https://img.shields.io/badge/Status-Review_Ready-orange.svg)](#)
