@@ -1,0 +1,34 @@
+from github import Github
+import os
+
+# --- CONFIGURATION ---
+# Keep your Client Secret in an environment variable for security!
+ACCESS_TOKEN = "your_github_personal_access_token_or_oauth_token"
+REPO_NAME = "MartinMati/Project-Aura" # Replace with your actual repo path
+FILE_PATH = "orchard_logs.txt"        # The file on your Pi
+GIT_PATH = "logs/orchard_logs.txt"    # Where it goes on GitHub
+
+def sync_to_github():
+    try:
+        g = Github(ACCESS_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+        
+        # Read your local data
+        with open(FILE_PATH, 'r') as file:
+            content = file.read()
+
+        try:
+            # Check if file already exists to update it
+            contents = repo.get_contents(GIT_PATH)
+            repo.update_file(contents.path, "Pi Sync: Update logs", content, contents.sha)
+            print("Successfully updated file on GitHub.")
+        except:
+            # If file doesn't exist, create it
+            repo.create_file(GIT_PATH, "Pi Sync: Initial log upload", content)
+            print("Successfully created new file on GitHub.")
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    sync_to_github()
