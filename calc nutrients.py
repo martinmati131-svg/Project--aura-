@@ -62,3 +62,18 @@ print(f"Status: Monitoring Hass & Fuerte Block")
 print(f"Tree Age: {age} months")
 print(f"Recommended Action: Apply {amount}g of {fertilizer} per tree.")
 print(f"Next Stage: {12 - age if age < 12 else 'Mature Phase'} months until next dosage increase.")
+
+# 2. ADD THIS TO THE BOTTOM OF YOUR SCRIPT
+file_path = "/home/pi/project-aura/docs/orchard_health.md" # Adjust to your GitHub folder path
+
+with open(file_path, "w") as f:
+    f.write(f"# Project Aura: Live Orchard Status\n")
+    f.write(f"**Last Sync:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    f.write(f"| Metric | Current Value |\n")
+    f.write(f"| :--- | :--- |\n")
+    f.write(f"| Tree Age | {age} months |\n")
+    f.write(f"| Fertilizer Type | {fertilizer} |\n")
+    f.write(f"| Dosage | {amount}g per tree |\n")
+
+print(f"Success: Documentation updated at {file_path}")
+
