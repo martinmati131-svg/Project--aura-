@@ -77,3 +77,41 @@ with open(file_path, "w") as f:
 
 print(f"Success: Documentation updated at {file_path}")
 
+class Crop:
+    def __init__(self, name, variety, plant_date):
+        self.name = name
+        self.variety = variety
+        self.plant_date = plant_date
+
+    def get_age(self):
+        # Reuses our date math logic
+        today = datetime.now()
+        delta = today - self.plant_date
+        return delta.days // 30
+from fastapi import FastAPI
+import joblib # To load your trained model later
+
+app = FastAPI()
+
+@app.get("/predict/harvest")
+def predict_harvest(crop_type: str, months_old: int):
+    # This is where your AI logic goes. 
+    # For now, let's use a simple calculation:
+    if crop_type == "Hass":
+        months_to_go = max(0, 36 - months_old) # Hass takes ~3 years to fruit
+        return {"status": "success", "months_remaining": months_to_go}
+    
+    return {"status": "error", "message": "Crop not recognized"}
+
+
+# Now you can easily add your full farm:
+my_crops = [
+    Crop("Avocado", "Hass", datetime(2025, 10, 15)),
+    Crop("Avocado", "Fuerte", datetime(2025, 10, 15)),
+    Crop("Macadamia", "Murang'a 20", datetime(2026, 4, 5)), # Future planting
+    Crop("Beans", "Rosecoco", datetime(2026, 4, 10))
+]
+
+for c in my_crops:
+    print(f"{c.name} ({c.variety}) is {c.get_age()} months old.")
+
