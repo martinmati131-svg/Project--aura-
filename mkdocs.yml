@@ -1,0 +1,41 @@
+site_name: Powerdreams Tech Docs
+site_url: https://docs.powerdreams.top
+repo_url: https://github.com/martinmati131-svg/project-aura
+
+theme:
+  name: material
+  logo: assets/logo.png  # Use your Powerdreams logo here
+  favicon: assets/favicon.ico
+  palette: 
+    # Light mode (Standard)
+    - scheme: default
+      primary: green    # Matches your Avocado brand
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode (For late-night coding)
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.tabs        # Clean top menu like a pro site
+    - navigation.sections    # Organizes your different crops
+    - search.suggest         # Quick find for NPK or Pi code
+    - content.code.copy      # Allows readers to copy your Pi scripts
+
+plugins:
+  - search
+  - blog:
+      blog_dir: blog         # For tech-specific dev logs
+
+nav:
+  - Home: index.md
+  - Project Aura:
+      - Hardware Setup: hardware.md
+      - Nutrient Calculator: orchard_health.md
+  - 🌍 Back to Main Blog: https://powerdreams.top
