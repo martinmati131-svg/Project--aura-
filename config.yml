@@ -1,24 +1,14 @@
-# Site Settings
-title: "Project Aura | Powerdreams Tech"
-description: "Edge AI & Precision Agriculture for Avocado Farming in Juja, Kenya."
+title: Project Aura | Powerdreams Tech
+description: Edge AI & Precision Agriculture for Avocado Farming in Juja, Kenya.
 theme: jekyll-theme-minimal
 
-# Brand Branding
-logo: "/assets/logo.png" # Make sure your logo is in an 'assets' folder
-google_analytics: [Your-ID-Optional]
+# Navigation (Appears at the top of your page)
+header_pages:
+  - index.md
+  - hardware.md
+  - orchard_health.md
 
-# Social & Links
+# Brand Links
 github:
   is_project_page: true
   repository_url: https://github.com/martinmati131-svg/project-aura
-
-# Navigation Bridge
-header_pages:
-  - index.md
-  - orchard_health.md
-  - hardware_setup.md
-
-# Footer/External Link
-remote_theme: pages-themes/minimal@v0.2.0
-plugins:
-  - jekyll-remote-theme
