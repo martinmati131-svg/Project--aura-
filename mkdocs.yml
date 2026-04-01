@@ -39,3 +39,14 @@ nav:
       - Hardware Setup: hardware.md
       - Nutrient Calculator: orchard_health.md
   - 🌍 Back to Main Blog: https://powerdreams.top
+
+nav:
+  - Welcome: index.md
+  - 🛠️ Engineering:
+      - Project Overview: hardware.md
+      - Prediction API: api_reference.md  # Placeholder for your FastAPI docs
+  - 🥑 Orchard Logs:
+      - April Dev Log: devlog-april-01.md
+      - Nutrient Roadmap: orchard_health.md
+  - 🌍 Community:
+      - Back to Powerdreams: https://powerdreams.top
