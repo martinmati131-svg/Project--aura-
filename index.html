@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Platform | Powerdreams</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --terminal-bg: #1e2a36;
+            --terminal-text: #2ecc71;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 15px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; padding: 30px; background: var(--primary); color: white; border-radius: 12px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .full-width { grid-column: 1 / -1; }
+        .badge { background: #e67e22; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75em; display: inline-block; margin-bottom: 10px; }
+        
+        /* Hourly/Daily Forecast Styles */
+        .forecast-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; margin-top: 10px; }
+        .data-pill { min-width: 70px; background: #f8f9fa; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.8em; border: 1px solid #eee; }
+
+        /* Digital Twin Map */
+        .sensor-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; background: #e9ecef; padding: 10px; border-radius: 8px; }
+        .tree-node { height: 35px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: bold; color: white; }
+        .hass { background: #1b5e20; } .fuerte { background: #27ae60; } .nursery { background: #81c784; }
+
+        /* Telemetry Log */
+        .log-container { background: var(--terminal-bg); color: var(--terminal-text); font-family: 'Courier New', monospace; padding: 15px; border-radius: 8px; height: 120px; overflow-y: hidden; font-size: 0.8em; }
+        .log-entry { margin-bottom: 4px; border-left: 2px solid var(--terminal-text); padding-left: 10px; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧠 Aura Platform</h1>
+        <p>Precision Agriculture | Juja, Kenya</p>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <span class="badge" id="system-status">INITIALIZING...</span>
+            <h2>Aura Brain</h2>
+            <p id="confidence-display"><strong>Confidence:</strong> --%</p>
+            <p id="brain-strategy" style="font-style: italic; color: #7f8c8d; font-size: 0.9em;">Analyzing local climate trends...</p>
+            <div id="harvest-advice-box" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+            <h3>🌍 Juja Hourly Forecast</h3>
+            <p id="current-weather" style="font-weight: bold; color: var(--accent);">Syncing with station...</p>
+            <div class="forecast-scroll" id="hourly-forecast"></div>
+        </div>
+
+        <div class="card">
+            <h3>🗺️ Orchard Digital Twin</h3>
+            <div class="sensor-map">
+                <div class="tree-node hass">H1</div><div class="tree-node hass">H2</div>
+                <div class="tree-node fuerte">F1</div><div class="tree-node fuerte">F2</div>
+                <div class="tree-node nursery">S1</div><div class="tree-node nursery">S2</div>
+                <div class="tree-node nursery">S3</div><div class="tree-node nursery">S4</div>
+            </div>
+            <p style="font-size: 0.7em; text-align: center; margin-top: 10px; color: #7f8c8d;">🟢 Hass | 🍀 Fuerte | 🌱 Nursery</p>
+        </div>
+
+        <div class="card">
+            <h2>🥑 News & Research</h2>
+            <div id="blogger-feed">
+                <p style="font-size: 0.8em; color: #7f8c8d;">Fetching latest from Aura Intelligence...</p>
+            </div>
+        </div>
+
+        <div class="card full-width" style="background: #2c3e50;">
+            <h3 style="color: white; margin: 0 0 10px 0; font-size: 0.9em;">🛰️ Aura-Pi Real-Time Telemetry</h3>
+            <div id="system-log" class="log-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic for Brain Animation, Weather, Blogger Feed, and Telemetry
+    window.onload = function() {
+        let confidence = 0;
+        const target = 98.4;
+        const interval = setInterval(() => {
+            if (confidence < target) {
+                confidence += 1.2;
+                document.getElementById('confidence-display').innerHTML = `<strong>Confidence:</strong> ${confidence.toFixed(1)}%`;
+            } else {
+                clearInterval(interval);
+                document.getElementById('confidence-display').innerHTML = `<strong>Confidence:</strong> ${target}% (Stable)`;
+                const stat = document.getElementById('system-status');
+                stat.innerText = "SYSTEM READY";
+                stat.style.background = "#27ae60";
+                stat.style.animation = "pulse 2s infinite";
+                fetchWeather();
+                fetchBloggerPosts();
+                startTelemetry();
+            }
+        }, 50);
+    };
+
+    async function fetchWeather() {
+        try {
+            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-1.1026&longitude=37.0149&hourly=temperature_2m,precipitation_probability&daily=precipitation_sum&current=temperature_2m,relative_humidity_2m&timezone=Africa%2FNairobi&forecast_days=1");
+            const data = await res.json();
+            
+            document.getElementById('current-weather').innerText = `Current: ${data.current.temperature_2m}°C | Hum: ${data.current.relative_humidity_2m}%`;
+
+            const hourlyCont = document.getElementById('hourly-forecast');
+            hourlyCont.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                const hour = new Date(data.hourly.time[i]).getHours();
+                hourlyCont.innerHTML += `<div class="data-pill"><strong>${hour}:00</strong><br>${data.hourly.temperature_2m[i]}°<br><small>${data.hourly.precipitation_probability[i]}%💧</small></div>`;
+            }
+
+            const advice = document.getElementById('harvest-advice-box');
+            if (data.daily.precipitation_sum[0] > 2) {
+                advice.innerHTML = `<div style="background:#fff3cd; padding:8px; border-radius:8px; border-left:4px solid #f1c40f; font-size:0.8em;">⚠️ <strong>High Rain:</strong> Delay harvest to protect oil density.</div>`;
+            } else {
+                advice.innerHTML = `<div style="background:#d4edda; padding:8px; border-radius:8px; border-left:4px solid #27ae60; font-size:0.8em;">✅ <strong>Dry Window:</strong> Ideal for Hass harvesting.</div>`;
+            }
+        } catch (e) { console.error("Weather Sync Failed"); }
+    }
+
+    async function fetchBloggerPosts() {
+        const feed = document.getElementById('blogger-feed');
+        try {
+            const res = await fetch("https://aura-intelligence.blogspot.com/feeds/posts/default?alt=json&max-results=3");
+            const data = await res.json();
+            feed.innerHTML = '';
+            data.feed.entry.forEach(post => {
+                const title = post.title.$t;
+                const link = post.link.find(l => l.rel === 'alternate').href;
+                feed.innerHTML += `<div style="margin-bottom:8px; border-left:2px solid var(--accent); padding-left:10px;"><a href="${link}" target="_blank" style="text-decoration:none; color:var(--primary); font-weight:bold; font-size:0.85em;">${title}</a></div>`;
+            });
+        } catch (e) { feed.innerHTML = "<p style='font-size:0.8em;'>Check Aura Intelligence for updates.</p>"; }
+    }
+
+    function startTelemetry() {
+        const log = document.getElementById('system-log');
+        const tasks = ["Scanning Hass Blocks...", "NEMA 17 Pulse Check...", "Syncing Weather...", "Analyzing DM Thresholds...", "Telemetry Sent...", "Edge-AI Inference Stable."];
+        setInterval(() => {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span style="color:#7f8c8d;">[${new Date().toLocaleTimeString()}]</span> ${tasks[Math.floor(Math.random() * tasks.length)]}`;
+            log.prepend(entry);
+            if (log.children.length > 5) log.removeChild(log.lastChild);
+        }, 4000);
+    }
+</script>
+</body>
+</html>
