@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aura Platform: Industrial Bio-Fertilizer & Pesticide Analytics | Juja, Kenya">
+    <title>Aura Platform | Powerdreams Intelligence</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --bg: #f4f7f6; --card-bg: #ffffff; --terminal-bg: #1e2a36; --terminal-text: #2ecc71; --warning: #e67e22; --info: #3498db; --dev-purple: #8e44ad; --nutrient-leaf: #16a085; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 15px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; padding: 40px 20px; background: var(--primary); color: white; border-radius: 12px; margin-bottom: 25px; }
+        nav { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        nav a { color: white; text-decoration: none; font-weight: bold; font-size: 0.85em; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-top: 5px solid var(--primary); }
+        .full-width { grid-column: 1 / -1; }
+        .badge { color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: inline-block; }
+        .stat-value { font-size: 2.5em; font-weight: bold; color: var(--primary); margin: 10px 0; }
+        .advisory-box { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.88em; border-left: 4px solid var(--primary); }
+        .dev-terminal { background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 15px; border-radius: 6px; font-size: 0.85em; margin-top: 10px; }
+        .log-container { background: var(--terminal-bg); color: var(--terminal-text); font-family: 'Courier New', monospace; padding: 15px; border-radius: 8px; height: 220px; overflow-y: hidden; font-size: 0.85em; }
+        .log-entry { margin-bottom: 6px; border-left: 2px solid var(--terminal-text); padding-left: 10px; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+        footer { text-align: center; margin-top: 50px; padding: 30px; font-size: 0.9em; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧠 Aura Platform</h1>
+        <p>Regenerative Ag & Industrial Bio-Nutrient Analytics | Juja, Kenya</p>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="partners.html">B2B Partners</a>
+            <a href="#dev-node">Dev Terminal</a>
+            <a href="https://auraintelligence1.blogspot.com" target="_blank">Research Blog</a>
+        </nav>
+    </header>
+
+    <div class="grid">
+        <div class="card" style="border-top-color: var(--nutrient-leaf);">
+            <span class="badge" style="background: var(--nutrient-leaf);">Nutrient Node</span>
+            <h2>Tithonia LNC</h2>
+            <div id="nutrient-display" class="stat-value">Active</div>
+            <div class="advisory-box" style="background: #e0f2f1; border-left-color: var(--nutrient-leaf);">
+                <strong>Foliar Feed Window:</strong> High Nitrogen bioavailability. Ideal for Maize V6 stage.
+            </div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--info);">
+            <span class="badge" style="background: var(--info);">Soil Health</span>
+            <h2>Substrate pH</h2>
+            <div id="ph-display" class="stat-value">6.2</div>
+            <div id="ph-status-box" class="advisory-box" style="background: #e1f5fe; border-left-color: var(--info);">
+                Optimal range for Phosphorus uptake from Tithonia green manure.
+            </div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--warning);">
+            <span class="badge" style="background: var(--warning);">Industrial Output</span>
+            <h2>Neem/Mufangi</h2>
+            <div id="yield-display" class="stat-value">14.8 L</div>
+            <div class="advisory-box" style="background: #fff3e0; border-left-color: var(--warning);">
+                <strong>Market Value:</strong> KES <span id="batch-value">17,760</span> batch.
+            </div>
+        </div>
+
+        <div class="card full-width" id="dev-node" style="border-top-color: var(--dev-purple);">
+            <span class="badge" style="background: var(--dev-purple);">Developer Section</span>
+            <h2>Hardware Architecture (Aura-Pi 5)</h2>
+            <div class="dev-terminal">
+                <span style="color: #f1c40f;">// Nutrient/Pesticide Synergy Logic</span><br>
+                - if (soil_ph < 6.0 && crop_stage == "V6") { Recommend("Tithonia Foliar Feed"); }<br>
+                - if (humidity > 70%) { Alert("Fungal Risk: Add Onion/Garlic to Tithonia mix"); }<br>
+                - ROS 2 Node: /aura/industrial/nutrient_monitor
+            </div>
+        </div>
+
+        <div class="card full-width" style="background: var(--primary); border: none;">
+            <h3 style="color: white; margin: 0 0 15px 0;">🛰️ Aura-Pi: Industrial Production Stream</h3>
+            <div id="system-log" class="log-container"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Powerdreams Intelligence. Built by Martin Mati.</p>
+    </footer>
+</div>
+
+<script>
+    window.onload = function() {
+        updateSoilHealth();
+        updateBatchYields();
+        startTelemetry();
+    };
+
+    function updateBatchYields() {
+        const yieldL = (Math.random() * (16.5 - 13.0) + 13.0).toFixed(1);
+        document.getElementById('yield-display').innerText = `${yieldL} L`;
+        document.getElementById('batch-value').innerText = (yieldL * 1200).toLocaleString();
+    }
+
+    function updateSoilHealth() {
+        const ph = (Math.random() * (6.3 - 5.9) + 5.9).toFixed(1);
+        document.getElementById('ph-display').innerText = `pH ${ph}`;
+    }
+
+    function startTelemetry() {
+        const log = document.getElementById('system-log');
+        const tasks = [
+            "Node_03: pH 6.2 Stable (Juja Red Soil)",
+            "Nutrient Logic: Tithonia LNC fermentation @ 92%",
+            "Synergy Alert: Onion extract added to batch #043",
+            "Mufangi Scents: Terpene barrier integrity [HIGH]",
+            "Neem Logic: Azadirachtin stability confirmed",
+            "Actuator: NEMA 17 stirring cycle 4/10",
+            "Commercial: Export manifest for Tithonia concentrate generated",
+            "Aura-Pi Inference: 14ms Node Latency"
+        ];
+        
+        const logUpdate = () => {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span style="color:#7f8c8d;">[${new Date().toLocaleTimeString()}]</span> ${tasks[Math.floor(Math.random() * tasks.length)]}`;
+            log.prepend(entry);
+            if (log.children.length > 8) log.removeChild(log.lastChild);
+        };
+        logUpdate();
+        setInterval(logUpdate, 3500);
+    }
+</script>
+</body>
+</html>
