@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Updates | Aura Intelligence</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --bg: #f8fafc; --card: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--primary); }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 30px; }
+        .feed-item { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); transition: 0.3s; }
+        .feed-item:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .date { color: #64748b; font-size: 0.85em; font-weight: bold; }
+        h2 { margin: 10px 0; font-size: 1.4em; }
+        a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .rss-link { display: inline-block; background: #f39c12; color: white; padding: 5px 12px; border-radius: 5px; font-size: 0.75em; text-decoration: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <a href="index.html" style="font-size: 0.9em; color: var(--primary);">← Back to Dashboard</a>
+        <h1>Aura Research Feed</h1>
+        <p>Real-time technical updates from the Juja research station.</p>
+        <a href="feed.xml" class="rss-link">XML FEED</a>
+    </header>
+
+    <div id="feed-container">
+        <div class="feed-item">
+            <span class="date">April 29, 2026</span>
+            <h2>The Tithonia-Onion Synergy Protocol</h2>
+            <p>Integrating Tithonia diversifolia with onion maceration to create a dual-action organic fertilizer and repellent.</p>
+            <a href="dev.html">Read Technical Specs →</a>
+        </div>
+
+        <div class="feed-item">
+            <span class="date">April 28, 2026</span>
+            <h2>Industrial SOP: Neem & Mufangi</h2>
+            <p>Finalized the 1:5 solvent-to-biomass ratio for commercial-grade bio-pesticide production.</p>
+            <a href="partners.html">View Partnership Guide →</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
