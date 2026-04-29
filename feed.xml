@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+    <title>Aura Intelligence | Project Aura Feed</title>
+    <link>https://powerdreams.top</link>
+    <description>Real-time updates on Bio-Pesticide SOPs, ROS 2 Robotics, and Regenerative Ag in Juja, Kenya.</description>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 29 Apr 2026 18:30:00 EAT</lastBuildDate>
+    <atom:link href="https://powerdreams.top/feed.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+        <title>The Tithonia-Onion Synergy Protocol</title>
+        <link>https://powerdreams.top/dev.html#tithonia</link>
+        <description>New research on combining Tithonia diversifolia with onion extracts for dual-action foliar feeding and antifungal protection.</description>
+        <pubDate>Wed, 29 Apr 2026 12:00:00 EAT</pubDate>
+        <guid>https://powerdreams.top/item1</guid>
+    </item>
+
+    <item>
+        <title>Mufangi-Neem Industrial SOP Live</title>
+        <link>https://powerdreams.top/partners.html</link>
+        <description>Standard Operating Procedure for industrial-scale extraction of Mexican Marigold and Neem oil concentrates.</description>
+        <pubDate>Tue, 28 Apr 2026 09:00:00 EAT</pubDate>
+        <guid>https://powerdreams.top/item2</guid>
+    </item>
+</channel>
+</rss>
