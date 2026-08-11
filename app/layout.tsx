@@ -1,41 +1,24 @@
-import { Footer } from '@/components/Blocks/Footer';
-import { Navbar } from "@/components/navbar";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
-import "./globals.css";
-import { cn } from "@/lib/utils";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "ChatDeck - AI Agent Platform",
-  description: "Build powerful AI agents with ChatDeck",
-};
+  title: 'Project Aura - Next-Gen AI Platform',
+  description: 'Autonomous workflows and edge AI deployment platform.',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
+    <html lang="en" className="dark">
+      <body className={inter.className}>
         {children}
-        <Footer />
       </body>
     </html>
-  );
+  )
 }

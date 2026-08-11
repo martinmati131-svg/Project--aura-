@@ -1,8 +1,3 @@
-
-const TestSection = () => {
-    return (
-        <div>TestSection</div>
-    )
+export default function DummyBlock() {
+  return null
 }
-
-export default TestSection

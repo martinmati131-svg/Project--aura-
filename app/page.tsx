@@ -1,23 +1,19 @@
-import { FaqSection } from "@/components/Blocks/FaqSection";
-import { FeaturesSection } from "@/components/Blocks/FeatureSection";
-import Hero from "@/components/Blocks/Hero";
-import { LogoCarousel } from "@/components/Blocks/LogoCarousel";
-import { PricingSection } from "@/components/Blocks/PricingSection";
-import { TeamSection } from "@/components/Blocks/TeamSection";
-import { TestimonialSection } from "@/components/Blocks/TestimonialSection";
+import { Navbar } from '@/components/navbar'
+import HeroSection from '@/components/hero-section'
+import Features from '@/components/features'
+import Pricing from '@/components/pricing'
+import FAQ from '@/components/faq'
+import Footer from '@/components/footer'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white dark:bg-black">
-      <div className="mx-auto max-w-7xl px-6 pt-40">
-        <Hero />
-        <LogoCarousel />
-        <FeaturesSection />
-        <TeamSection />
-        <TestimonialSection />
-        <PricingSection />
-        <FaqSection />
-      </div>
+    <main className="min-h-screen bg-background">
+      <Navbar />
+      <HeroSection />
+      <Features />
+      <Pricing />
+      <FAQ />
+      <Footer />
     </main>
-  );
+  )
 }
