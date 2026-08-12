@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function FaqSection() { return null }
+export default FaqSection

@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function Footer() { return null }
+export default Footer

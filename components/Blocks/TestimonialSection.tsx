@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function TestimonialSection() { return null }
+export default TestimonialSection

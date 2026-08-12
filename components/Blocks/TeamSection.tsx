@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function TeamSection() { return null }
+export default TeamSection

@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function TestSection() { return null }
+export default TestSection

@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function Hero() { return null }
+export default Hero

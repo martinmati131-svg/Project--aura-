@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function PricingSection() { return null }
+export default PricingSection

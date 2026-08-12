@@ -1,3 +1,2 @@
-export default function DummyBlock() {
-  return null
-}
+export function LogoCarousel() { return null }
+export default LogoCarousel
