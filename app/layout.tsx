@@ -1,24 +1,28 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Project Aura - Next-Gen AI Platform',
-  description: 'Autonomous workflows and edge AI deployment platform.',
-}
+import { ThemeProvider } from "@/components/ThemeProvider";
+import ThemeToggle from "@/components/ThemeToggle";
+import "./globals.css";
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-foreground antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <header className="flex justify-between items-center p-4 max-w-4xl mx-auto border-b">
+            <h1 className="font-bold text-lg">Project Aura</h1>
+            <ThemeToggle />
+          </header>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
