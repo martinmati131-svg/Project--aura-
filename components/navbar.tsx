@@ -8,6 +8,7 @@ import React from 'react'
 
 const menuItems = [
   { name: 'Features', href: '#features' },
+  { name: 'Team', href: '#team' },
   { name: 'Testimonials', href: '#testimonials' },
   { name: 'Pricing', href: '#pricing' },
   { name: 'FAQ', href: '#faq' },
@@ -83,6 +84,7 @@ export const Navbar = () => {
             <Button size="sm">Get Started</Button>
           </div>
 
+          {/* Mobile menu */}
           {menuState && (
             <div className="mt-4 flex flex-col gap-4 border-t pt-4 lg:hidden">
               <ul className="space-y-3 text-base">
@@ -109,3 +111,4 @@ export const Navbar = () => {
     </nav>
   )
 }
+
