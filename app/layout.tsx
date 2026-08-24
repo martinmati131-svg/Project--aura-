@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export default function RootLayout({
@@ -21,6 +22,7 @@ export default function RootLayout({
             <ThemeToggle />
           </header>
           {children}
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
