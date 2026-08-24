@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AIChatWidget from "@/components/AIChatWidget";
-import CommandPalette from "@/components/CommandPalette";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://powerdreams.top"),
@@ -43,8 +41,6 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased min-h-screen bg-background text-foreground">
         {children}
-        <AIChatWidget />
-        <CommandPalette />
       </body>
     </html>
   );
