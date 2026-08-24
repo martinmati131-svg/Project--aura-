@@ -4,7 +4,14 @@ import CommandPalette from "@/components/CommandPalette";
 import ScrollProgress from "@/components/ScrollProgress";
 import AIChatWidget from "@/components/AIChatWidget";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { constructMetadata } from "@/lib/seo";
 import "./globals.css";
+
+export const metadata = constructMetadata({
+  title: "Project Aura | Edge AI & Robotics",
+  description: "Next-generation documentation, guides, and updates for Project Aura.",
+  image: "/api/og?title=Project%20Aura",
+});
 
 export default function RootLayout({
   children,
