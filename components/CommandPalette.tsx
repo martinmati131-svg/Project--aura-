@@ -1,14 +1,17 @@
-cat << 'EOF' > components/CommandPalette.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import * as React from "react";
 import { Command } from "cmdk";
-import { Search, Rocket, BarChart2, BookOpen, Terminal } from "lucide-react";
+import { Search, Moon, Sun, Home, BookOpen } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 
-export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+export default function CommandPalette() {
+  const [open, setOpen] = React.useState(false);
+  const { setTheme } = useTheme();
+  const router = Router();
 
-  useEffect(() => {
+  React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -22,51 +25,39 @@ export function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <Command className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden text-zinc-100">
-        <div className="flex items-center border-b border-zinc-800 px-3">
-          <Search className="w-4 h-4 text-zinc-400 mr-2" />
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <Command className="w-full max-w-lg bg-background border rounded-xl shadow-2xl overflow-hidden p-2">
+        <div className="flex items-center border-b px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <Command.Input
             placeholder="Type a command or search..."
-            className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-zinc-500"
+            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
-        <Command.List className="max-h-80 overflow-y-auto p-2 space-y-1">
-          <Command.Empty className="p-4 text-xs text-zinc-500 text-center">
+        <Command.List className="max-h-[300px] overflow-y-auto p-2">
+          <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
             No results found.
           </Command.Empty>
-
-          <Command.Group heading="Navigation" className="text-xs text-zinc-500 px-2 py-1 font-semibold">
+          <Command.Group heading="Navigation" className="text-xs text-muted-foreground px-2 py-1">
             <Command.Item
-              onSelect={() => { window.location.href = "#"; setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-zinc-800 aria-selected:bg-zinc-800"
+              onSelect={() => { router.push("/"); setOpen(false); }}
+              className="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer hover:bg-accent"
             >
-              <Rocket className="w-4 h-4 text-emerald-400" />
-              <span>Overview</span>
-            </Command.Item>
-            <Command.Item
-              onSelect={() => { window.location.href = "#analytics"; setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-zinc-800 aria-selected:bg-zinc-800"
-            >
-              <BarChart2 className="w-4 h-4 text-blue-400" />
-              <span>Telemetry & Analytics</span>
-            </Command.Item>
-            <Command.Item
-              onSelect={() => { window.location.href = "#docs"; setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-zinc-800 aria-selected:bg-zinc-800"
-            >
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>Documentation</span>
+              <Home className="h-4 w-4" /> Home
             </Command.Item>
           </Command.Group>
-
-          <Command.Group heading="Actions" className="text-xs text-zinc-500 px-2 py-1 font-semibold mt-2">
+          <Command.Group heading="Theme" className="text-xs text-muted-foreground px-2 py-1 mt-2">
             <Command.Item
-              onSelect={() => { window.open("https://github.com/martinmati131-svg/Project--aura-", "_blank"); setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-zinc-800 aria-selected:bg-zinc-800"
+              onSelect={() => { setTheme("light"); setOpen(false); }}
+              className="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer hover:bg-accent"
             >
-              <Terminal className="w-4 h-4 text-amber-400" />
-              <span>Open GitHub Repository</span>
+              <Sun className="h-4 w-4" /> Light Mode
+            </Command.Item>
+            <Command.Item
+              onSelect={() => { setTheme("dark"); setOpen(false); }}
+              className="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer hover:bg-accent"
+            >
+              <Moon className="h-4 w-4" /> Dark Mode
             </Command.Item>
           </Command.Group>
         </Command.List>
@@ -74,4 +65,3 @@ export function CommandPalette() {
     </div>
   );
 }
-EOF
