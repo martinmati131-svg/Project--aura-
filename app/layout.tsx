@@ -1,48 +1,32 @@
-import { ThemeProvider } from "@/components/ThemeProvider";
-import ThemeToggle from "@/components/ThemeToggle";
-import CommandPalette from "@/components/CommandPalette";
-import ScrollProgress from "@/components/ScrollProgress";
-import AIChatWidget from "@/components/AIChatWidget";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { constructMetadata } from "@/lib/seo";
-import "./globals.css";
+import type { Metadata } from "next";
 
-export const metadata = constructMetadata({
-  title: "Project Aura | Edge AI & Robotics",
-  description: "Next-generation documentation, guides, and updates for Project Aura.",
-  image: "/api/og?title=Project%20Aura",
-});
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-background text-foreground antialiased min-h-screen">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ScrollProgress />
-          <CommandPalette />
-          <header className="flex justify-between items-center p-4 max-w-4xl mx-auto border-b">
-            <h1 className="font-bold text-lg">Project Aura</h1>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground hidden sm:inline-block">
-                Press <kbd className="px-1.5 py-0.5 text-xs bg-muted border rounded">⌘K</kbd>
-              </span>
-              <ThemeToggle />
-            </div>
-          </header>
-          {children}
-          <AIChatWidget />
-          <SpeedInsights />
-        </ThemeProvider>
-      </body>
-    </html>
-  );
-}
+export const metadata: Metadata = {
+  metadataBase: new URL("https://powerdreams.top"),
+  title: {
+    default: "Project Aura | Open-Source Edge AI & Robotics",
+    template: "%s | Project Aura",
+  },
+  description: "Building next-generation open-source Edge AI architectures, robotics tools, and web deployments.",
+  openGraph: {
+    title: "Project Aura",
+    description: "Open-source Edge AI & Robotics Infrastructure",
+    url: "https://powerdreams.top",
+    siteName: "Project Aura",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Project Aura Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Project Aura",
+    description: "Open-source Edge AI & Robotics Infrastructure",
+    images: ["/og-image.png"],
+  },
+};
