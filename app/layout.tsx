@@ -2,6 +2,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 import CommandPalette from "@/components/CommandPalette";
 import ScrollProgress from "@/components/ScrollProgress";
+import AIChatWidget from "@/components/AIChatWidget";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             </div>
           </header>
           {children}
+          <AIChatWidget />
           <SpeedInsights />
         </ThemeProvider>
       </body>
