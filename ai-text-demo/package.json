@@ -1,0 +1,10 @@
+{
+  "name": "ai-text-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.46",
+    "ai": "^7.0.77",
+    "dotenv": "^17.4.2"
+  }
+}
