@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import { Command } from "cmdk";
-import { Search, Moon, Sun, Home, BookOpen } from "lucide-react";
+import { Search, Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
 export default function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const { setTheme } = useTheme();
-  const router = Router();
+  const router = useRouter();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {

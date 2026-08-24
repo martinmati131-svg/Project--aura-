@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Link as LinkIcon, Check, Twitter, Linkedin } from "lucide-react";
+import { Share2, Link as LinkIcon, Check, Share } from "lucide-react";
 
 interface ShareProps {
   title: string;
@@ -31,19 +31,17 @@ export default function ShareButtons({ title, slug }: ShareProps) {
         href={twitterUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-        aria-label="Share on X"
+        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors text-xs font-semibold px-3"
       >
-        <Twitter className="h-4 w-4" />
+        X / Twitter
       </a>
       <a
         href={linkedinUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-        aria-label="Share on LinkedIn"
+        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors text-xs font-semibold px-3"
       >
-        <Linkedin className="h-4 w-4" />
+        LinkedIn
       </a>
       <button
         onClick={copyToClipboard}
