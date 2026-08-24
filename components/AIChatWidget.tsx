@@ -6,7 +6,9 @@ import { Bot, X, Send } from "lucide-react";
 
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
