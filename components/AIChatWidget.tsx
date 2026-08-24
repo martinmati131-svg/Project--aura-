@@ -6,9 +6,17 @@ import { Bot, X, Send } from "lucide-react";
 
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+  const [input, setInput] = useState("");
+  const { messages, sendMessage, status } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    sendMessage({ text: input });
+    setInput("");
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -53,7 +61,9 @@ export default function AIChatWidget() {
                       : "bg-muted text-foreground border"
                   }`}
                 >
-                  {m.content}
+                  {m.parts
+                    ? m.parts.map((p, idx) => (p.type === "text" ? p.text : null)).join("")
+                    : (m as { content?: string }).content || ""}
                 </div>
               </div>
             ))}
@@ -62,7 +72,7 @@ export default function AIChatWidget() {
           <form onSubmit={handleSubmit} className="p-3 border-t flex gap-2">
             <input
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question..."
               className="flex-1 bg-muted px-3 py-1.5 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary"
             />
