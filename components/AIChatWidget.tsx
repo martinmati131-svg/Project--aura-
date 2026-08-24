@@ -1,8 +1,8 @@
 "use client";
 
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { useState } from "react";
-import { Bot, X, Send, User } from "lucide-react";
+import { Bot, X, Send } from "lucide-react";
 
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
