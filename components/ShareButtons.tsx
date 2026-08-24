@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Link as LinkIcon, Check, Share } from "lucide-react";
+import { Share2, Link as LinkIcon, Check } from "lucide-react";
 
 interface ShareProps {
   title: string;
