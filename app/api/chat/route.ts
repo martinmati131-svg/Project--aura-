@@ -13,9 +13,5 @@ export async function POST(req: Request) {
     messages,
   });
 
-  return new Response(result.toDataStream(), {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-    },
-  });
+  return (result as any).toDataStreamResponse();
 }
