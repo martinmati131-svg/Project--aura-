@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   },
   description: "Building next-generation open-source Edge AI architectures, robotics tools, and web deployments.",
   openGraph: {
-    title: "Project Aura",
-    description: "Open-source Edge AI & Robotics Infrastructure",
+    title: "Project Aura | Open-Source Edge AI & Robotics",
+    description: "Building next-generation open-source Edge AI architectures, robotics tools, and web deployments.",
     url: "https://powerdreams.top",
     siteName: "Project Aura",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://powerdreams.top/og-image.png",
         width: 1200,
         height: 630,
         alt: "Project Aura Preview",
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Project Aura",
-    description: "Open-source Edge AI & Robotics Infrastructure",
-    images: ["/og-image.png"],
+    title: "Project Aura | Open-Source Edge AI & Robotics",
+    description: "Building next-generation open-source Edge AI architectures, robotics tools, and web deployments.",
+    images: ["https://powerdreams.top/og-image.png"],
   },
 };
 
