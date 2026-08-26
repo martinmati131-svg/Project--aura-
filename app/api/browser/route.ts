@@ -18,25 +18,22 @@ export async function POST(req: Request) {
       apiKey: process.env.BROWSERBASE_API_KEY!,
     });
 
-    // 1. Launch Browserbase session
     const session = await bb.sessions.create({
       projectId: process.env.BROWSERBASE_PROJECT_ID!,
     });
 
-    // 2. Connect Playwright CDP
     const browser = await chromium.connectOverCDP(session.connectUrl);
     const context = browser.contexts()[0];
     const page = context.pages()[0] || (await context.newPage());
 
-    // 3. Perform actions
     await page.goto(targetUrl, { waitUntil: "networkidle" });
     const pageTitle = await page.title();
 
     await browser.close();
 
-    // 4. Save session telemetry to Supabase
+    // Insert record into the Aura table
     const { data, error: dbError } = await supabase
-      .from("web_sessions")
+      .from("Aura")
       .insert([
         {
           session_id: session.id,
