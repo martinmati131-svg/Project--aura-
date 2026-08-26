@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Browserbase } from "@browserbasehq/sdk";
 import { chromium } from "playwright-core";
+import { supabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -17,24 +18,44 @@ export async function POST(req: Request) {
       apiKey: process.env.BROWSERBASE_API_KEY!,
     });
 
+    // 1. Launch Browserbase session
     const session = await bb.sessions.create({
       projectId: process.env.BROWSERBASE_PROJECT_ID!,
     });
 
+    // 2. Connect Playwright CDP
     const browser = await chromium.connectOverCDP(session.connectUrl);
     const context = browser.contexts()[0];
     const page = context.pages()[0] || (await context.newPage());
 
+    // 3. Perform actions
     await page.goto(targetUrl, { waitUntil: "networkidle" });
     const pageTitle = await page.title();
 
-    aria-label
     await browser.close();
+
+    // 4. Save session telemetry to Supabase
+    const { data, error: dbError } = await supabase
+      .from("web_sessions")
+      .insert([
+        {
+          session_id: session.id,
+          target_url: targetUrl,
+          page_title: pageTitle,
+          status: "completed",
+        },
+      ])
+      .select();
+
+    if (dbError) {
+      console.error("Supabase Log Error:", dbError);
+    }
 
     return NextResponse.json({
       success: true,
       sessionId: session.id,
       title: pageTitle,
+      record: data ? data[0] : null,
     });
   } catch (error: any) {
     return NextResponse.json(
