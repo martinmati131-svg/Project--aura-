@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("posts")
       .insert([
         {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Browserbase } from "@browserbasehq/sdk";
 import { chromium } from "playwright-core";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     await browser.close();
 
     // Insert record into the Aura table
-    const { data, error: dbError } = await supabase
+    const { data, error: dbError } = await getSupabase()
       .from("Aura")
       .insert([
         {
