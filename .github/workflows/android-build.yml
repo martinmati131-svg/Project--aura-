@@ -1,0 +1,39 @@
+name: Build Android Environment & App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: aura-android-builder:latest
+
+      - name: Compile Android Project inside Container
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/app aura-android-builder:latest bash -c "
+            cd /app
+            if [ -f ./gradlew ]; then
+              chmod +x ./gradlew
+              ./gradlew assembleDebug
+            else
+              echo 'Gradle wrapper not found, checking SDK setup...'
+              sdkmanager --list
+            fi
+          "
