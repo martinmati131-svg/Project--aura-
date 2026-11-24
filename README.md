@@ -69,13 +69,7 @@ curl -s -X POST http://localhost:8000/command -H "Content-Type: application/json
 curl -s -X POST http://localhost:8000/command -H "Content-Type: application/json" -d '{"cmd":"jog","dir":"fwd","steps":25}'
 curl -s -X POST http://localhost:8000/command -H "Content-Type: application/json" -d '{"cmd":"estop"}'
 Production Build
+
 npm run build
 npm run start
 
-### Save Directly to `README.md`
-If you want to write this straight into `~/AURA/aura-frontend/README.md` (or your root `AURA/README.md`) and push it to GitHub:
-
-```bash
-cat << 'EOF' > README.md
-# paste the Markdown above here, or let me know if you want a one-liner Python script to write & push it
-EOF
