@@ -53,7 +53,7 @@ export default function HomePage() {
           <Link href="/" className="text-sky-400">
             HOME
           </Link>
-          <Link href="/dashboard" className="hover:text-white">
+          <Link href="/dashboard" className="text-cyan-400 hover:text-cyan-300 font-semibold">
             TELEMETRY
           </Link>
           <Link href="/docs" className="hover:text-white">
