@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AURA_POSTS, type PostItem } from "../data/posts";
 
@@ -8,6 +8,22 @@ const TAGS = ["ALL", "ROBOTICS", "EDGE-AI", "PYTHON", "RELEASE"] as const;
 
 export default function HomePage() {
   const [posts, setPosts] = useState<PostItem[]>(AURA_POSTS);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("aura_custom_posts_v1");
+      if (!raw) return;
+      const saved: PostItem[] = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length > 0) {
+        setPosts((prev) => {
+          const existingIds = new Set(prev.map((item) => item.id));
+          const uniqueSaved = saved.filter((item) => item && !existingIds.has(item.id));
+          return [...uniqueSaved, ...prev];
+        });
+      }
+    } catch {
+      // Ignore storage read/parse errors
+    }
+  }, []);
   const [activeTag, setActiveTag] = useState<(typeof TAGS)[number]>("ALL");
   const [showComposer, setShowComposer] = useState(false);
   const [title, setTitle] = useState("");
@@ -32,7 +48,15 @@ export default function HomePage() {
       external: href.trim().startsWith("http"),
     };
 
-    setPosts([newPost, ...posts]);
+    const updated = [newPost, ...posts];
+    setPosts(updated);
+    try {
+      const seedIds = new Set(AURA_POSTS.map((item) => item.id));
+      const customOnly = updated.filter((item) => !seedIds.has(item.id));
+      window.localStorage.setItem("aura_custom_posts_v1", JSON.stringify(customOnly));
+    } catch {
+      // Ignore storage write errors
+    }
     setTitle("");
     setSummary("");
     setHref("/dashboard");
