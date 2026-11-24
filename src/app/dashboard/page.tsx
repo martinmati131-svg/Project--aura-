@@ -8,6 +8,8 @@ interface TelemetryPacket {
   motor_temp?: number;
   current_ma?: number;
   position_deg?: number;
+  pos_steps?: number;
+  estop?: boolean;
   rpm?: number;
   status?: string;
   [key: string]: unknown;
@@ -20,7 +22,6 @@ export default function DashboardPage() {
   const [rawLogs, setRawLogs] = useState<string[]>([]);
   const [commandStatus, setCommandStatus] = useState<string>("Ready");
   const [jogSteps, setJogSteps] = useState<number>(50);
-  const [jogAxis, setJogAxis] = useState<string>("joint_1");
   const [busy, setBusy] = useState<boolean>(false);
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -125,6 +126,8 @@ export default function DashboardPage() {
     }
   };
 
+  const safeSteps = Math.max(1, Math.abs(Number(jogSteps) || 0));
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -174,15 +177,19 @@ export default function DashboardPage() {
         {/* Live Telemetry Readouts */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
-            <p className="text-xs uppercase tracking-wider text-slate-400">System State</p>
+            <p className="text-xs uppercase tracking-wider text-slate-400">E-STOP / State</p>
             <p className="text-2xl font-mono font-bold text-cyan-400 mt-2">
-              {String(telemetry?.status ?? "STANDBY")}
+              {telemetry?.estop ? "ESTOP LOCKED" : String(telemetry?.status ?? "STANDBY")}
             </p>
           </div>
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
-            <p className="text-xs uppercase tracking-wider text-slate-400">Position (deg)</p>
+            <p className="text-xs uppercase tracking-wider text-slate-400">Position (Steps / Deg)</p>
             <p className="text-2xl font-mono font-bold text-slate-100 mt-2">
-              {telemetry?.position_deg !== undefined ? `${telemetry.position_deg}°` : "--"}
+              {telemetry?.pos_steps !== undefined
+                ? `${telemetry.pos_steps} steps`
+                : telemetry?.position_deg !== undefined
+                ? `${telemetry.position_deg}°`
+                : "--"}
             </p>
           </div>
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
@@ -212,7 +219,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => sendCommand({ command: "ESTOP" }, "E-STOP")}
+                onClick={() => sendCommand({ cmd: "estop" }, "E-STOP")}
                 className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-lg tracking-wider uppercase transition"
               >
                 E-STOP
@@ -220,7 +227,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => sendCommand({ command: "CALIBRATE" }, "Calibrate")}
+                onClick={() => sendCommand({ cmd: "calibrate" }, "Calibrate")}
                 className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition"
               >
                 Zero-Point Calibrate
@@ -230,28 +237,15 @@ export default function DashboardPage() {
             {/* Motor Jog */}
             <div className="border-t border-slate-800 pt-4 space-y-3">
               <p className="text-sm font-medium text-slate-300">Manual Motor Jog</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Axis</label>
-                  <select
-                    value={jogAxis}
-                    onChange={(e) => setJogAxis(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm"
-                  >
-                    <option value="joint_1">joint_1</option>
-                    <option value="joint_2">joint_2</option>
-                    <option value="joint_3">joint_3</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Steps</label>
-                  <input
-                    type="number"
-                    value={jogSteps}
-                    onChange={(e) => setJogSteps(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Steps</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={jogSteps}
+                  onChange={(e) => setJogSteps(Number(e.target.value))}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
@@ -259,27 +253,21 @@ export default function DashboardPage() {
                   type="button"
                   disabled={busy}
                   onClick={() =>
-                    sendCommand(
-                      { command: "JOG", axis: jogAxis, steps: -Math.abs(jogSteps) },
-                      `Jog -${Math.abs(jogSteps)}`
-                    )
+                    sendCommand({ cmd: "jog", dir: "rev", steps: safeSteps }, `Jog rev ${safeSteps}`)
                   }
                   className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 py-2.5 px-4 rounded-lg text-sm font-mono transition"
                 >
-                  ← Jog -{Math.abs(jogSteps)}
+                  ← Rev ({safeSteps})
                 </button>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() =>
-                    sendCommand(
-                      { command: "JOG", axis: jogAxis, steps: Math.abs(jogSteps) },
-                      `Jog +${Math.abs(jogSteps)}`
-                    )
+                    sendCommand({ cmd: "jog", dir: "fwd", steps: safeSteps }, `Jog fwd ${safeSteps}`)
                   }
                   className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 py-2.5 px-4 rounded-lg text-sm font-mono transition"
                 >
-                  Jog +{Math.abs(jogSteps)} →
+                  Fwd ({safeSteps}) →
                 </button>
               </div>
             </div>
